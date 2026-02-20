@@ -37,12 +37,13 @@
         }
 
         .logo {
-            width: 120px;
-            height: auto;
-            margin-bottom: 1.5rem;
-            /* Optional: Adds a slight blue glow behind your SVG */
-            filter: drop-shadow(0 0 12px var(--bio-blue-glow));
-        }
+			width: 280px; /* Increased from 120px */
+			max-width: 100%;
+			height: auto;
+			display: block; /* Forces it to act as a structural element */
+			margin: 0 auto 2rem auto; /* Centers it cleanly */
+			filter: drop-shadow(0 0 15px var(--bio-blue-glow));
+		}
 
         h1 {
             color: var(--text-main);
