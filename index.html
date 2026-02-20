@@ -1,118 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Illucidate | Bacterial Detection Signals</title>
-    <style>
-        :root {
-            --charcoal-base: #1e1e24;
-            --charcoal-card: #2c2c35;
-            --bio-blue: #00b4d8;
-            --bio-blue-glow: rgba(0, 180, 216, 0.4);
-            --text-main: #f5f5f7;
-            --text-muted: #a0a0ab;
-        }
-
-        body {
-            background-color: var(--charcoal-base);
-            color: var(--text-main);
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            text-align: center;
-        }
-
-        .container {
-            background-color: var(--charcoal-card);
-            padding: 3.5rem 2.5rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-            max-width: 550px;
-            width: 90%;
-            border-top: 4px solid var(--bio-blue);
-        }
-
-        .logo {
-			width: 280px; /* Increased from 120px */
-			max-width: 100%;
-			height: auto;
-			display: block; /* Forces it to act as a structural element */
-			margin: 0 auto 2rem auto; /* Centers it cleanly */
-			filter: drop-shadow(0 0 15px var(--bio-blue-glow));
-		}
-
-        h1 {
-            color: var(--text-main);
-            margin: 0 0 0.5rem 0;
-            font-size: 2.2rem;
-            letter-spacing: 1.5px;
-            font-weight: 600;
-        }
-
-        .tagline {
-            color: var(--bio-blue);
-            font-size: 1.1rem;
-            font-weight: 500;
-            margin-bottom: 1.5rem;
-            letter-spacing: 0.5px;
-        }
-
-        .description {
-            color: var(--text-muted);
-            line-height: 1.7;
-            font-size: 0.95rem;
-            margin-bottom: 2.5rem;
-        }
-
-        .contact-box {
-            background-color: rgba(0, 180, 216, 0.05);
-            border: 1px solid rgba(0, 180, 216, 0.2);
-            border-radius: 8px;
-            padding: 1.5rem;
-        }
-
-        .status {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-
-        .contact-box a {
-            color: var(--bio-blue);
-            text-decoration: none;
-            font-size: 1.1rem;
-            font-weight: 600;
-            transition: color 0.2s ease;
-        }
-
-        .contact-box a:hover {
-            color: var(--text-main);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Illucidate | Early Signal Discovery Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/site.css">
 </head>
 <body>
-    <div class="container">
-        <img src="/assets/illucidate_logo2.svg" alt="Illucidate Logo" class="logo">
-        
-        <h1>Illucidate</h1>
-        <div class="tagline">Illuminating early signals in bacterial detection.</div>
-        
-        <div class="description">
-            Advanced multivariate analysis for pathogen identification workflows. 
-            Processing high-dimensional assay matrices to isolate actionable, early-warning temporal signals.
+  <div class="background-noise" aria-hidden="true"></div>
+  <main class="page-shell">
+    <header class="hero reveal">
+      <div class="hero-brand">
+        <img src="assets/illucidate_logo2.svg" alt="Illucidate logo" class="hero-logo">
+        <div>
+          <p class="kicker">Research Preview</p>
+          <h1>Illucidate</h1>
+          <p class="tagline">Illuminating early signals in bacterial detection.</p>
         </div>
-        
-        <div class="contact-box">
-            <span class="status">System in Active Development</span>
-            <a href="mailto:legal@illucidate.org">legal@illucidate.org</a>
+      </div>
+      <p class="hero-copy">
+        This browser demo shows a curated Illucidate-style analysis flow:
+        multichannel kinetics, early divergence scoring, and plate-level temporal signal mapping.
+      </p>
+    </header>
+
+    <section class="control-section reveal" aria-labelledby="controls-title">
+      <div class="section-head">
+        <h2 id="controls-title">Interactive Controls</h2>
+        <p class="helper-text">Control group is fixed to <strong>Control</strong>; choose a target group for ranking.</p>
+      </div>
+      <form id="dashboard-controls" class="controls-grid" aria-label="Dashboard controls">
+        <fieldset class="control-card">
+          <legend>Metric</legend>
+          <div class="segmented" id="metric-toggle" role="radiogroup" aria-label="Measurement metric">
+            <button type="button" class="segment is-active" data-metric="od600" role="radio" aria-checked="true">OD600</button>
+            <button type="button" class="segment" data-metric="luminescence" role="radio" aria-checked="false">Luminescence</button>
+            <button type="button" class="segment" data-metric="ratio" role="radio" aria-checked="false">RLU/OD</button>
+          </div>
+        </fieldset>
+
+        <fieldset class="control-card">
+          <legend>Visible Groups</legend>
+          <div id="group-controls" class="group-checks" aria-live="polite"></div>
+        </fieldset>
+
+        <fieldset class="control-card">
+          <legend>Target Group</legend>
+          <label for="target-group" class="visually-hidden">Target group for effect size comparison</label>
+          <select id="target-group"></select>
+        </fieldset>
+
+        <fieldset class="control-card">
+          <legend>Heatmap Time</legend>
+          <label for="time-slider" id="time-label">Timepoint</label>
+          <input id="time-slider" type="range" min="0" max="0" value="0" step="1" aria-describedby="time-value">
+          <p class="time-readout"><span id="time-value">0.00 h</span></p>
+        </fieldset>
+      </form>
+    </section>
+
+    <section class="dashboard reveal" aria-label="Illucidate dashboard">
+      <article class="panel panel-series">
+        <div class="panel-head">
+          <h3>Temporal Signal Overlays</h3>
+          <p>Per-well trajectories with group means for selected metric.</p>
         </div>
-    </div>
+        <div id="series-chart" class="panel-body chart-host" role="img" aria-label="Time-series signal chart"></div>
+      </article>
+
+      <article class="panel panel-features">
+        <div class="panel-head">
+          <h3>Early Feature Ranking</h3>
+          <p>Top discriminatory features by absolute Cohen's d.</p>
+        </div>
+        <div id="feature-chart" class="panel-body chart-host" role="img" aria-label="Feature ranking bar chart"></div>
+      </article>
+
+      <article class="panel panel-plate">
+        <div class="panel-head">
+          <h3>96-Well Detection Heatmap</h3>
+          <p>Z-score normalized plate snapshot for selected metric and time.</p>
+        </div>
+        <div id="heatmap-chart" class="panel-body chart-host" role="img" aria-label="96-well heatmap"></div>
+      </article>
+    </section>
+
+    <section class="method-section reveal" aria-labelledby="method-title">
+      <h2 id="method-title">Method Snapshot</h2>
+      <p>
+        Features include baseline mean, early slope, time-to-threshold, early RLU/OD behavior, and AUC.
+        Ranking compares each target group to Control using effect size, while the plate map displays clamped z-score activity.
+      </p>
+    </section>
+
+    <section class="contact-section reveal" aria-labelledby="contact-title">
+      <h2 id="contact-title">System in Active Development</h2>
+      <p>
+        Interested in collaboration, datasets, or beta testing across plate-reader formats?
+      </p>
+      <a href="mailto:legal@illucidate.org" class="contact-link">legal@illucidate.org</a>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <script type="module" src="scripts/app.js"></script>
 </body>
 </html>
