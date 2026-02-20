@@ -5,13 +5,113 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Illucidate | Bacterial Detection Signals</title>
     <style>
-        body { font-family: system-ui, sans-serif; margin: 40px auto; max-width: 650px; line-height: 1.6; color: #333; }
-        h1 { color: #005A9C; }
+        :root {
+            --charcoal-base: #1e1e24;
+            --charcoal-card: #2c2c35;
+            --bio-blue: #00b4d8;
+            --bio-blue-glow: rgba(0, 180, 216, 0.4);
+            --text-main: #f5f5f7;
+            --text-muted: #a0a0ab;
+        }
+
+        body {
+            background-color: var(--charcoal-base);
+            color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        .container {
+            background-color: var(--charcoal-card);
+            padding: 3.5rem 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            max-width: 550px;
+            width: 90%;
+            border-top: 4px solid var(--bio-blue);
+        }
+
+        .logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 1.5rem;
+            /* Optional: Adds a slight blue glow behind your SVG */
+            filter: drop-shadow(0 0 12px var(--bio-blue-glow));
+        }
+
+        h1 {
+            color: var(--text-main);
+            margin: 0 0 0.5rem 0;
+            font-size: 2.2rem;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+        }
+
+        .tagline {
+            color: var(--bio-blue);
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        .description {
+            color: var(--text-muted);
+            line-height: 1.7;
+            font-size: 0.95rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .contact-box {
+            background-color: rgba(0, 180, 216, 0.05);
+            border: 1px solid rgba(0, 180, 216, 0.2);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .status {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .contact-box a {
+            color: var(--bio-blue);
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: color 0.2s ease;
+        }
+
+        .contact-box a:hover {
+            color: var(--text-main);
+        }
     </style>
 </head>
 <body>
-    <h1>Illucidate</h1>
-    <p>Illuminating early signals in bacterial detection. Advanced multivariate analysis for pathogen identification workflows.</p>
-    <p><em>System currently under active development. Direct inquiries to legal@illucidate.org.</em></p>
+    <div class="container">
+        <img src="assets/illucidate_logo2.svg" alt="Illucidate Logo" class="logo">
+        
+        <h1>Illucidate</h1>
+        <div class="tagline">Illuminating early signals in bacterial detection.</div>
+        
+        <div class="description">
+            Advanced multivariate analysis for pathogen identification workflows. 
+            Processing high-dimensional assay matrices to isolate actionable, early-warning temporal signals.
+        </div>
+        
+        <div class="contact-box">
+            <span class="status">System in Active Development</span>
+            <a href="mailto:legal@illucidate.org">legal@illucidate.org</a>
+        </div>
+    </div>
 </body>
 </html>

@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 220">
+<defs>
+  <filter id="halo-filter" x="-200%" y="-200%" width="500%" height="500%">
+    <feFlood flood-color="#00D1FF" result="glow-color" />
+    <feComposite in="glow-color" in2="SourceGraphic" operator="in" result="colored-source" />
+    
+    <feMorphology operator="dilate" radius="2" in="colored-source" result="dilated" />
+    <feGaussianBlur stdDeviation="4" in="dilated" result="blurred" />
+    
+    <feMerge>
+      <feMergeNode in="blurred" />
+      <feMergeNode in="SourceGraphic" />
+    </feMerge>
+  </filter>
+</defs>
+<style>
+  :root {
+    --ink: #111827;          /* light mode ink */
+    --accent: #38BDF8;      /* light blue signal */
+    --halo: rgba(0,0,0,0.25);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #E5E7EB;
+      --accent: #7DD3FC;
+      --halo: rgba(255,255,255,0.25);
+    }
+  }
+
+  .ink {
+    stroke: var(--ink);
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .thin { stroke-width: 5; }
+
+  .accent {
+    stroke: var(--accent);
+    fill: var(--accent);
+  }
+
+  /* subtle visibility halo */
+  .halo {
+    filter: drop-shadow(0 0 1.2px var(--halo));
+  }
+
+  text {
+    fill: var(--ink);
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    font-weight: 600;
+    letter-spacing: .4px;
+  }
+</style>
+
+  <!-- BACTERIUM -->
+  <ellipse class="ink halo" cx="180" cy="110" rx="120" ry="80"></ellipse>
+
+  <!-- VERTICAL ILLUMINATION / ASSAY ROD -->
+  <path class="ink thin halo" d="M180 30 V190"></path>
+
+  <!-- GROWTH CURVE -->
+  <!-- Crosses rod early, continues over wordmark, ends with downward brush serif -->
+  <path class="ink thin halo" d="M80 150
+           C105 150, 120 145, 135 138
+           C150 128, 160 118, 170 108
+           C185 95, 210 85, 245 80
+           C320 68, 400 68, 470 72
+           C520 75, 565 82, 600 92
+           L620 102"></path>
+
+  <!-- EARLY DETECTION POINT -->
+   <circle cx="140" cy="135" r="5" fill="#00D1FF" filter="url(#halo-filter)"></circle>
+
+  <!-- WORDMARK -->
+  <text x="360" y="135" font-size="58">Illucidate</text>
+</svg>

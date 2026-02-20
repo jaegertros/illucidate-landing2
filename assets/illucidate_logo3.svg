@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 220">
+<defs>
+  <filter id="halo-filter" x="-200%" y="-200%" width="500%" height="500%">
+    <feFlood flood-color="#00D1FF" result="glow-color" />
+    <feComposite in="glow-color" in2="SourceGraphic" operator="in" result="colored-source" />
+    
+    <feMorphology operator="dilate" radius="2" in="colored-source" result="dilated" />
+    <feGaussianBlur stdDeviation="4" in="dilated" result="blurred" />
+    
+    <feMerge>
+      <feMergeNode in="blurred" />
+      <feMergeNode in="SourceGraphic" />
+    </feMerge>
+  </filter>
+</defs>
+
+  <style>
+    :root {
+      --ink: #111827;
+      --bg: transparent;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --ink: #E5E7EB;
+      }
+    }
+
+    .ink {
+      stroke: var(--ink);
+      fill: none;
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .thin { stroke-width: 5; }
+
+    text {
+      fill: var(--ink);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      font-weight: 600;
+      letter-spacing: .4px;
+    }
+  </style>
+
+  <ellipse class="ink" cx="180" cy="110" rx="120" ry="80"></ellipse>
+
+  <path class="ink thin" d="M180 30 V190"></path>
+
+  <path class="ink thin" d="M80 150
+           C105 150, 120 145, 135 138
+           C150 128, 160 118, 170 108
+           C178 100, 182 95, 186 90
+           C200 71, 222 61, 257 60
+           C280 59, 300 62, 318 66
+           C366 74, 353 75, 367 84"></path>
+
+  <circle cx="140" cy="135" r="5" fill="#00D1FF" filter="url(#halo-filter)"></circle>
+
+  <text x="360" y="135" font-size="58">Illucidate</text>
+</svg>
+
+
+
+
+
