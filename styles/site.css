@@ -426,6 +426,48 @@ input[type="range"] {
   color: var(--slate-100);
 }
 
+
+.lead-form {
+  margin-top: var(--space-3);
+  display: grid;
+  gap: var(--space-3);
+  max-width: 560px;
+}
+
+.lead-form label {
+  display: grid;
+  gap: var(--space-1);
+  color: var(--slate-100);
+  font-size: var(--fs-sm);
+}
+
+.lead-form input,
+.lead-form textarea {
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(127, 187, 206, 0.32);
+  background: rgba(8, 20, 27, 0.86);
+  color: var(--slate-100);
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+}
+
+.lead-form textarea {
+  resize: vertical;
+}
+
+.lead-form .contact-link {
+  width: fit-content;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.lead-form .contact-link:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

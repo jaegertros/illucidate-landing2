@@ -101,11 +101,32 @@
       <p>
         Interested in collaboration, datasets, or beta testing across plate-reader formats?
       </p>
+      <form id="supabase-lead-form" class="lead-form" novalidate>
+        <label>
+          Name
+          <input type="text" name="name" autocomplete="name" required>
+        </label>
+        <label>
+          Email
+          <input type="email" name="email" autocomplete="email" required>
+        </label>
+        <label>
+          Organization
+          <input type="text" name="organization" autocomplete="organization">
+        </label>
+        <label>
+          Message
+          <textarea name="message" rows="4" required></textarea>
+        </label>
+        <button type="submit" class="contact-link">Send to Illucidate</button>
+        <p id="lead-form-status" role="status" aria-live="polite" class="helper-text"></p>
+      </form>
       <a href="mailto:legal@illucidate.org" class="contact-link">legal@illucidate.org</a>
     </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <script src="scripts/config.js"></script>
   <script type="module" src="scripts/app.js"></script>
 </body>
 </html>
