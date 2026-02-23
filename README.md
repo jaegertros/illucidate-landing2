@@ -17,3 +17,12 @@ Static landing page + interactive dashboard for Illucidate.
 
 This app sends contact-form submissions directly from the browser using the public anon key.
 If you need spam protection or stricter validation, place a server/edge function in front of the insert.
+
+
+## Plate Designer flow
+
+- Main dashboard: `index.html`
+- Dedicated layout workspace: `designer.html`
+- The designer saves the current layout into browser `localStorage`, supports JSON download, and provides a quick "Use on main page" handoff.
+
+This architecture works well on Azure Static Web Apps because both pages are static assets and require no server-side runtime for routing.

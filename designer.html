@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Illucidate | Plate Composition Designer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/site.css">
+</head>
+<body>
+  <div class="background-noise" aria-hidden="true"></div>
+  <main class="page-shell">
+    <header class="hero reveal">
+      <p class="kicker">Layout Tool</p>
+      <h1>Plate Composition Designer</h1>
+      <p class="hero-copy">Build plate layouts with more space, export JSON for versioning, then apply the saved layout on the main dashboard page.</p>
+      <p class="helper-text"><a href="index.html" class="inline-link">← Back to dashboard</a></p>
+    </header>
+
+    <section class="plate-designer reveal" aria-labelledby="plate-designer-title">
+      <div class="section-head">
+        <h2 id="plate-designer-title">Design Layout</h2>
+        <p class="helper-text">Choose a plate format, select wells, and map additives with volumes and notes.</p>
+      </div>
+
+      <div class="designer-grid">
+        <article class="designer-panel">
+          <div class="designer-toolbar">
+            <label for="plate-size-select">Plate size</label>
+            <select id="plate-size-select" aria-label="Plate size">
+              <option value="6">6-well</option>
+              <option value="12">12-well</option>
+              <option value="24">24-well</option>
+              <option value="48">48-well</option>
+              <option value="96" selected>96-well</option>
+              <option value="384">384-well</option>
+            </select>
+            <button id="clear-selection" type="button" class="designer-action">Clear selection</button>
+          </div>
+          <p id="selection-hint" class="helper-text"></p>
+          <div id="interactive-plate" class="plate-grid-wrap" role="grid" aria-label="Interactive plate"></div>
+        </article>
+
+        <article class="designer-panel">
+          <div class="designer-subhead">
+            <h3>Additives</h3>
+            <button id="add-additive" type="button" class="designer-action">+ Add additive</button>
+          </div>
+          <div id="additives-list" class="additives-list"></div>
+          <div class="designer-subhead">
+            <h3>Export Preview</h3>
+          </div>
+          <pre id="plate-export" class="plate-export" aria-live="polite"></pre>
+
+          <div class="designer-subhead designer-export-actions">
+            <button id="download-layout" type="button" class="designer-action">Download JSON</button>
+            <a href="index.html" id="use-layout" class="designer-action use-layout-link">Use on main page</a>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <script src="scripts/config.js"></script>
+  <script type="module" src="scripts/app.js"></script>
+</body>
+</html>

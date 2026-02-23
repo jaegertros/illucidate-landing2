@@ -29,6 +29,7 @@ const PLATE_LAYOUTS = {
   384: { rows: 16, cols: 24 }
 };
 const ADDITIVE_COLORS = ["#4fc3b8", "#4d9fd1", "#f3cf73", "#ef8f8f", "#b2a3ff", "#8be48d", "#f7a6ff", "#87d9ff"];
+const LAYOUT_STORAGE_KEY = "illucidate_plate_layout_v1";
 
 const dom = {
   metricButtons: Array.from(document.querySelectorAll("[data-metric]")),
@@ -46,9 +47,15 @@ const dom = {
   addAdditive: document.getElementById("add-additive"),
   additivesList: document.getElementById("additives-list"),
   plateExport: document.getElementById("plate-export"),
+  downloadLayout: document.getElementById("download-layout"),
+  useLayoutLink: document.getElementById("use-layout"),
+  savedLayoutStatus: document.getElementById("saved-layout-status"),
   leadForm: document.getElementById("supabase-lead-form"),
   leadFormStatus: document.getElementById("lead-form-status")
 };
+
+const isDesignerPage = Boolean(dom.interactivePlate);
+const isDashboardPage = Boolean(dom.seriesChart && dom.featureChart && dom.heatmapChart);
 
 const app = {
   data: null,
@@ -138,11 +145,8 @@ function clearSelection() {
   renderPlateDesigner();
 }
 
-function updateExportPreview() {
-  if (!dom.plateExport) {
-    return;
-  }
-  const payload = {
+function serializePlateLayout() {
+  return {
     plate_size: app.plateDesigner.plateSize,
     additives: app.plateDesigner.additives.map((additive) => ({
       name: additive.name,
@@ -152,6 +156,60 @@ function updateExportPreview() {
       wells: [...additive.wells].sort()
     }))
   };
+}
+
+function persistCurrentLayout() {
+  const payload = serializePlateLayout();
+  localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(payload));
+  return payload;
+}
+
+function applyPersistedLayout(payload) {
+  if (!payload || typeof payload !== "object") {
+    return;
+  }
+  const plateSize = Number.parseInt(String(payload.plate_size), 10);
+  if (PLATE_LAYOUTS[plateSize]) {
+    app.plateDesigner.plateSize = plateSize;
+    if (dom.plateSizeSelect) {
+      dom.plateSizeSelect.value = String(plateSize);
+    }
+  }
+
+  const mappedAdditives = Array.isArray(payload.additives)
+    ? payload.additives.map((additive, index) => ({
+        id: additiveIdCounter + index,
+        name: additive?.name || `Additive ${index + 1}`,
+        volumeUl: additive?.volume_uL == null ? "" : String(additive.volume_uL),
+        notes: additive?.notes || "",
+        color: additive?.color || ADDITIVE_COLORS[index % ADDITIVE_COLORS.length],
+        wells: new Set(Array.isArray(additive?.wells) ? additive.wells : [])
+      }))
+    : [];
+
+  additiveIdCounter += mappedAdditives.length;
+  app.plateDesigner.additives = mappedAdditives.length ? mappedAdditives : [createAdditive()];
+  app.plateDesigner.selectedWells = new Set();
+  app.plateDesigner.anchorWell = null;
+}
+
+function loadPersistedLayout() {
+  const raw = localStorage.getItem(LAYOUT_STORAGE_KEY);
+  if (!raw) {
+    return null;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function updateExportPreview() {
+  if (!dom.plateExport) {
+    return;
+  }
+  const payload = serializePlateLayout();
   dom.plateExport.textContent = JSON.stringify(payload, null, 2);
 }
 
@@ -654,6 +712,38 @@ function bindEvents() {
     app.plateDesigner.additives.push(createAdditive());
     renderPlateDesigner();
   });
+
+  dom.downloadLayout?.addEventListener("click", () => {
+    const payload = persistCurrentLayout();
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "illucidate-plate-layout.json";
+    anchor.click();
+    URL.revokeObjectURL(url);
+  });
+
+  dom.useLayoutLink?.addEventListener("click", () => {
+    persistCurrentLayout();
+  });
+}
+
+function updateSavedLayoutStatus() {
+  if (!dom.savedLayoutStatus) {
+    return;
+  }
+  const payload = loadPersistedLayout();
+  if (!payload) {
+    dom.savedLayoutStatus.textContent = "No saved designer layout yet. Open the dedicated designer page to create one.";
+    return;
+  }
+  const additiveCount = Array.isArray(payload.additives) ? payload.additives.length : 0;
+  const mappedWells = (payload.additives || []).reduce(
+    (total, additive) => total + (Array.isArray(additive.wells) ? additive.wells.length : 0),
+    0
+  );
+  dom.savedLayoutStatus.textContent = `Saved layout loaded: ${payload.plate_size}-well plate, ${additiveCount} additive${additiveCount === 1 ? "" : "s"}, ${mappedWells} mapped well${mappedWells === 1 ? "" : "s"}.`;
 }
 
 
@@ -709,6 +799,26 @@ function validateDatasetSchema(dataset) {
 }
 
 async function bootstrap() {
+  if (isDesignerPage) {
+    const saved = loadPersistedLayout();
+    if (saved) {
+      applyPersistedLayout(saved);
+    } else {
+      app.plateDesigner.additives = [createAdditive()];
+    }
+    bindEvents();
+    renderPlateDesigner();
+    requestAnimationFrame(() => {
+      document.body.classList.add("is-ready");
+    });
+    return;
+  }
+
+  if (!isDashboardPage) {
+    document.body.classList.add("is-ready");
+    return;
+  }
+
   try {
     const response = await fetch("data/demo-dataset.json");
     if (!response.ok) {
@@ -724,7 +834,7 @@ async function bootstrap() {
     app.state.targetGroup = app.groups.find((group) => group !== CONTROL_GROUP) || null;
     app.state.timeIndex = Math.min(6, Math.max(dataset.time.length - 1, 0));
     app.featureRows = app.data.wells.map((well) => computeWellFeatures(well, app.data.time));
-    app.plateDesigner.additives = [createAdditive()];
+    updateSavedLayoutStatus();
 
     renderGroupControls();
     syncTargetOptions();
@@ -734,16 +844,21 @@ async function bootstrap() {
     bindLeadForm();
     exposeDebugSnapshot();
     renderAll();
-    renderPlateDesigner();
 
     requestAnimationFrame(() => {
       document.body.classList.add("is-ready");
     });
   } catch (error) {
     const message = `Unable to initialize dashboard: ${error.message}`;
-    dom.seriesChart.innerHTML = `<p class="empty-state">${message}</p>`;
-    dom.featureChart.innerHTML = `<p class="empty-state">${message}</p>`;
-    dom.heatmapChart.innerHTML = `<p class="empty-state">${message}</p>`;
+    if (dom.seriesChart) {
+      dom.seriesChart.innerHTML = `<p class="empty-state">${message}</p>`;
+    }
+    if (dom.featureChart) {
+      dom.featureChart.innerHTML = `<p class="empty-state">${message}</p>`;
+    }
+    if (dom.heatmapChart) {
+      dom.heatmapChart.innerHTML = `<p class="empty-state">${message}</p>`;
+    }
     document.body.classList.add("is-ready");
     console.error(error);
   }

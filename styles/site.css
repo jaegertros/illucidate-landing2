@@ -192,6 +192,14 @@ h3 {
   line-height: var(--lh-loose);
 }
 
+.inline-link {
+  color: var(--teal-300);
+}
+
+.inline-link:hover {
+  color: var(--slate-100);
+}
+
 .control-section {
   padding: var(--space-5);
 }
@@ -717,4 +725,13 @@ input[type="range"] {
   .additive-fields {
     grid-template-columns: 1fr;
   }
+}
+
+.use-layout-link {
+  text-decoration: none;
+}
+
+.designer-export-actions {
+  margin-top: var(--space-3);
+  justify-content: flex-start;
 }
