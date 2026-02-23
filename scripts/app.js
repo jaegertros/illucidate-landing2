@@ -29,7 +29,9 @@ const dom = {
   timeValue: document.getElementById("time-value"),
   seriesChart: document.getElementById("series-chart"),
   featureChart: document.getElementById("feature-chart"),
-  heatmapChart: document.getElementById("heatmap-chart")
+  heatmapChart: document.getElementById("heatmap-chart"),
+  leadForm: document.getElementById("supabase-lead-form"),
+  leadFormStatus: document.getElementById("lead-form-status")
 };
 
 const app = {
@@ -265,6 +267,48 @@ function exposeDebugSnapshot() {
   };
 }
 
+
+
+function bindLeadForm() {
+  if (!dom.leadForm) {
+    return;
+  }
+
+  const submitButton = dom.leadForm.querySelector('button[type="submit"]');
+
+  dom.leadForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const formData = new FormData(dom.leadForm);
+    const name = String(formData.get("name") || "").trim();
+    const email = String(formData.get("email") || "").trim();
+    const organization = String(formData.get("organization") || "").trim();
+    const message = String(formData.get("message") || "").trim();
+
+    if (!name || !email || !message) {
+      setLeadFormStatus("Please complete name, email, and message before submitting.", true);
+      return;
+    }
+
+    submitButton.disabled = true;
+    setLeadFormStatus("Sending message...");
+
+    try {
+      await submitLead({
+        name,
+        email,
+        organization: organization || null,
+        message
+      });
+      dom.leadForm.reset();
+      setLeadFormStatus("Thanks! Your message has been saved.");
+    } catch (error) {
+      setLeadFormStatus(error.message, true);
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+}
+
 function bindEvents() {
   for (const button of dom.metricButtons) {
     button.addEventListener("click", () => {
@@ -290,6 +334,49 @@ function bindEvents() {
     }
     resizeTimer = window.setTimeout(renderAll, 140);
   });
+}
+
+
+
+function getSupabaseConfig() {
+  const config = globalThis.__ILLUCIDATE_CONFIG || {};
+  return {
+    url: typeof config.supabaseUrl === "string" ? config.supabaseUrl.trim() : "",
+    anonKey: typeof config.supabaseAnonKey === "string" ? config.supabaseAnonKey.trim() : "",
+    table: typeof config.leadsTable === "string" && config.leadsTable.trim() ? config.leadsTable.trim() : "contact_leads"
+  };
+}
+
+async function submitLead(payload) {
+  const config = getSupabaseConfig();
+  if (!config.url || !config.anonKey) {
+    throw new Error("Supabase is not configured yet. Update scripts/config.js first.");
+  }
+
+  const endpoint = `${config.url}/rest/v1/${encodeURIComponent(config.table)}`;
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      apikey: config.anonKey,
+      Authorization: `Bearer ${config.anonKey}`,
+      Prefer: "return=minimal"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const details = await response.text();
+    throw new Error(`Supabase insert failed (${response.status}): ${details || "Unknown error"}`);
+  }
+}
+
+function setLeadFormStatus(message, isError = false) {
+  if (!dom.leadFormStatus) {
+    return;
+  }
+  dom.leadFormStatus.textContent = message;
+  dom.leadFormStatus.style.color = isError ? "var(--danger-300)" : "var(--teal-300)";
 }
 
 function validateDatasetSchema(dataset) {
@@ -323,6 +410,7 @@ async function bootstrap() {
     dom.timeSlider.max = String(Math.max(dataset.time.length - 1, 0));
     dom.timeSlider.value = String(app.state.timeIndex);
     bindEvents();
+    bindLeadForm();
     exposeDebugSnapshot();
     renderAll();
 
