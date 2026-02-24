@@ -49,6 +49,17 @@
     <section class="control-section reveal" aria-labelledby="controls-title">
       <div class="section-head">
         <h2 id="controls-title">Interactive Controls</h2>
+        <div class="data-source-actions">
+          <button type="button" id="load-file-btn" class="data-source-btn">Load File</button>
+          <button type="button" id="explore-data-btn" class="data-source-btn">Explore Data</button>
+          <input type="file" id="file-upload-input" accept=".json" class="visually-hidden">
+        </div>
+      </div>
+      <div id="active-experiment-banner" class="active-banner" hidden>
+        <span>Viewing: <strong class="active-banner-name"></strong></span>
+        <button type="button" id="reset-demo-btn" class="data-source-btn">Reset to Demo</button>
+      </div>
+      <div class="section-subhead">
         <p class="helper-text">Control group is fixed to <strong>Control</strong>; choose a target group for ranking.</p>
       </div>
       <form id="dashboard-controls" class="controls-grid" aria-label="Dashboard controls">
@@ -143,6 +154,9 @@
       <a href="mailto:legal@illucidate.org" class="contact-link">legal@illucidate.org</a>
     </section>
   </main>
+
+  <aside id="experiment-drawer" class="experiment-drawer" hidden></aside>
+  <div id="drawer-backdrop" class="drawer-backdrop" hidden></div>
 
   <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
   <script src="scripts/config.js"></script>
