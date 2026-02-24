@@ -255,10 +255,32 @@ function renderGroups() {
 
     head.append(nameInput, colorInput, deleteGroupButton);
 
+    // Collapsible details section (organism + additives)
+    const detailsSection = document.createElement("div");
+    detailsSection.className = "collapsible-section";
+
+    // Summary line showing organism + additive count inline
+    const summaryParts = [];
+    if (group.organism.species) summaryParts.push(group.organism.species);
+    if (group.organism.strain) summaryParts.push(group.organism.strain);
+    if (group.additives.length) summaryParts.push(`${group.additives.length} additive(s)`);
+
+    const toggleBtn = document.createElement("button");
+    toggleBtn.type = "button";
+    toggleBtn.className = "collapse-toggle";
+    toggleBtn.textContent = summaryParts.length
+      ? `Details: ${summaryParts.join(" · ")}`
+      : "Add organism / additives...";
+    toggleBtn.addEventListener("click", () => {
+      const isCollapsed = detailsSection.classList.toggle("is-collapsed");
+      if (!isCollapsed) {
+        detailsSection.style.maxHeight = detailsSection.scrollHeight + "px";
+      }
+    });
+
     const organismFields = document.createElement("div");
     organismFields.className = "additive-fields";
-    organismFields.style.marginTop = "8px";
-    organismFields.innerHTML = "<strong>Organism (Optional)</strong>";
+    organismFields.innerHTML = "<strong>Organism</strong>";
 
     const speciesInput = document.createElement("input");
     speciesInput.type = "text";
@@ -281,19 +303,29 @@ function renderGroups() {
     organismFields.append(speciesInput, strainInput);
 
     const additivesContainer = document.createElement("div");
-    additivesContainer.style.marginTop = "12px";
-    additivesContainer.style.paddingTop = "12px";
-    additivesContainer.style.borderTop = "1px solid var(--border-color, #ccc)";
+    additivesContainer.style.marginTop = "4px";
+    additivesContainer.style.paddingTop = "4px";
+    additivesContainer.style.borderTop = "1px solid rgba(127, 187, 206, 0.15)";
 
     const additivesHead = document.createElement("div");
     additivesHead.style.display = "flex";
     additivesHead.style.justifyContent = "space-between";
-    additivesHead.innerHTML = "<strong>Additives</strong>";
+    additivesHead.style.alignItems = "center";
+    additivesHead.style.gap = "4px";
+
+    const additivesLabel = document.createElement("strong");
+    additivesLabel.textContent = "Additives";
+    additivesLabel.style.fontSize = "var(--fs-2xs)";
+    additivesLabel.style.color = "var(--slate-500)";
+    additivesLabel.style.textTransform = "uppercase";
+    additivesLabel.style.letterSpacing = "0.05em";
 
     const presetSelect = document.createElement("select");
-    presetSelect.innerHTML = "<option value=\"\">+ Add Component...</option><option value=\"custom\">Custom Additive</option>";
+    presetSelect.style.fontSize = "var(--fs-2xs)";
+    presetSelect.style.padding = "2px 6px";
+    presetSelect.innerHTML = "<option value=\"\">+ Add...</option><option value=\"custom\">Custom</option>";
     for (const key of Object.keys(MEDIA_PRESETS)) {
-      presetSelect.innerHTML += `<option value="${key}">${key} Media</option>`;
+      presetSelect.innerHTML += `<option value="${key}">${key}</option>`;
     }
 
     presetSelect.addEventListener("change", () => {
@@ -312,18 +344,20 @@ function renderGroups() {
       renderGroups();
     });
 
-    additivesHead.append(presetSelect);
+    additivesHead.append(additivesLabel, presetSelect);
     additivesContainer.append(additivesHead);
 
     group.additives.forEach((additive, index) => {
       const additiveRow = document.createElement("div");
       additiveRow.style.display = "flex";
-      additiveRow.style.gap = "8px";
-      additiveRow.style.marginTop = "8px";
+      additiveRow.style.gap = "4px";
+      additiveRow.style.marginTop = "4px";
 
       const additiveName = document.createElement("input");
       additiveName.placeholder = "Name";
       additiveName.value = additive.name;
+      additiveName.style.flex = "1 1 0";
+      additiveName.style.minWidth = "0";
       additiveName.addEventListener("input", () => {
         additive.name = additiveName.value;
         updateExportPreview();
@@ -332,7 +366,7 @@ function renderGroups() {
       const additiveVolume = document.createElement("input");
       additiveVolume.type = "number";
       additiveVolume.placeholder = "uL";
-      additiveVolume.style.width = "70px";
+      additiveVolume.style.width = "55px";
       additiveVolume.value = additive.volumeUl;
       additiveVolume.addEventListener("input", () => {
         additive.volumeUl = additiveVolume.value;
@@ -342,6 +376,7 @@ function renderGroups() {
       const removeAdditiveButton = document.createElement("button");
       removeAdditiveButton.textContent = "×";
       removeAdditiveButton.className = "designer-action danger";
+      removeAdditiveButton.style.padding = "2px 6px";
       removeAdditiveButton.addEventListener("click", () => {
         group.additives.splice(index, 1);
         renderGroups();
@@ -351,21 +386,28 @@ function renderGroups() {
       additivesContainer.append(additiveRow);
     });
 
+    detailsSection.append(organismFields, additivesContainer);
+    // Start collapsed if nothing is filled in
+    const hasDetails = group.organism.species || group.organism.strain || group.additives.length;
+    if (!hasDetails) {
+      detailsSection.classList.add("is-collapsed");
+    }
+
     const footer = document.createElement("div");
     footer.className = "additive-footer";
 
     const mapped = document.createElement("span");
-    mapped.textContent = `${group.wells.size} well(s) assigned`;
+    mapped.textContent = `${group.wells.size} well(s)`;
 
     const applyButton = document.createElement("button");
     applyButton.type = "button";
     applyButton.className = "designer-action";
-    applyButton.textContent = "Assign selected wells";
+    applyButton.textContent = "Assign selected";
     applyButton.disabled = !designerState.selectedWells.size;
     applyButton.addEventListener("click", () => applySelectionToGroup(group.id));
 
     footer.append(mapped, applyButton);
-    card.append(head, organismFields, additivesContainer, footer);
+    card.append(head, toggleBtn, detailsSection, footer);
     fragment.appendChild(card);
   }
 
