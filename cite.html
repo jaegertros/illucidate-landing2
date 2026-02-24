@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Illucidate | Cite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/site.css">
+</head>
+<body>
+  <div class="background-noise" aria-hidden="true"></div>
+  <main class="page-shell">
+    <nav class="top-command-bar reveal" aria-label="Site navigation">
+      <div class="page-links">
+        <span class="nav-group-label">Pages</span>
+        <a href="/" class="ui-chip">Dashboard</a>
+        <a href="/designer" class="ui-chip">Plate Designer</a>
+        <a href="/rationale" class="ui-chip">Rationale</a>
+        <a href="/bio" class="ui-chip">Bio</a>
+        <a href="/roadmap" class="ui-chip">Roadmap</a>
+        <a href="/cite" class="ui-chip is-active" aria-current="page">Cite</a>
+      </div>
+      <div class="utility-links">
+        <span class="nav-group-label">Tools</span>
+        <a href="https://colab.research.google.com/github/jaegertros/illucidate-landing/blob/main/illucidate/notebooks/01_quickstart_colab.ipynb" class="ui-chip is-small" target="_blank" rel="noopener noreferrer">Open Colab</a>
+        <a href="https://buymeacoffee.com/cwaddell13" class="ui-chip is-small" target="_blank" rel="noopener noreferrer">Buy Me a Coffee</a>
+      </div>
+    </nav>
+
+    <header class="hero reveal">
+      <p class="page-crumb" aria-label="Breadcrumb">Home / Cite</p>
+      <p class="kicker">Citing Work</p>
+      <h1>How to cite Illucidate and data sources</h1>
+      <p class="hero-copy">Please cite both the software and the original datasets used in your analysis workflow.</p>
+    </header>
+
+    <section class="method-section reveal" aria-labelledby="software-citation-title">
+      <h2 id="software-citation-title">Software citation</h2>
+      <pre class="plate-export" aria-label="BibTeX citation">@software{illucidate2025,
+  title = {Illucidate: Illuminating early signals in bacterial detection},
+  author = {Waddell, Caleb L.},
+  year = {2025},
+  url = {https://github.com/jaegertros/illucidate},
+  version = {0.1.0},
+  note = {Open-source toolkit for multivariate analysis of time-series biosensor data}
+}</pre>
+    </section>
+
+    <section class="method-section reveal" aria-labelledby="data-citation-title">
+      <h2 id="data-citation-title">Data citation principles</h2>
+      <p>When analyzing published or externally sourced datasets, always cite the original publication and honor its license/usage terms.</p>
+      <p>If datasets came from direct author communication, keep explicit permission records and acknowledge data providers in methods or acknowledgments.</p>
+      <p>When in doubt, over-cite rather than under-cite.</p>
+    </section>
+  </main>
+</body>
+</html>

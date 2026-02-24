@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Illucidate | Plate Designer</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="styles/site.css">
+</head>
+<body>
+	<div class="background-noise" aria-hidden="true"></div>
+	<main class="page-shell">
+		<nav class="top-command-bar reveal" aria-label="Site navigation">
+			<div class="page-links">
+				<span class="nav-group-label">Pages</span>
+				<a href="/" class="ui-chip">Dashboard</a>
+				<a href="/designer" class="ui-chip is-active" aria-current="page">Plate Designer</a>
+				<a href="/rationale" class="ui-chip">Rationale</a>
+				<a href="/bio" class="ui-chip">Bio</a>
+				<a href="/roadmap" class="ui-chip">Roadmap</a>
+				<a href="/cite" class="ui-chip">Cite</a>
+			</div>
+			<div class="utility-links">
+				<span class="nav-group-label">Tools</span>
+				<a href="https://colab.research.google.com/github/jaegertros/illucidate-landing/blob/main/illucidate/notebooks/01_quickstart_colab.ipynb" class="ui-chip is-small" target="_blank" rel="noopener noreferrer">Open Colab</a>
+				<a href="https://buymeacoffee.com/cwaddell13" class="ui-chip is-small" target="_blank" rel="noopener noreferrer">Buy Me a Coffee</a>
+			</div>
+		</nav>
+
+		<header class="hero reveal">
+			<p class="page-crumb" aria-label="Breadcrumb">Home / Plate Designer</p>
+			<div class="hero-brand">
+				<img src="assets/illucidate_logo2.svg" alt="Illucidate logo" class="hero-logo">
+				<div>
+					<p class="kicker">Plate Builder</p>
+					<h1>Plate Composition Designer</h1>
+					<p class="tagline">Build, export, and send your custom plate map to dashboard analysis.</p>
+				</div>
+			</div>
+			<a href="/" class="contact-link">Back to Dashboard</a>
+		</header>
+
+		<section class="plate-designer reveal" aria-labelledby="plate-designer-title">
+			<div class="section-head">
+				<h2 id="plate-designer-title">Design Plate Layout</h2>
+				<p class="helper-text">Choose plate format, select wells, assign groups, then export or analyze.</p>
+			</div>
+
+			<div class="designer-grid">
+				<article class="designer-panel">
+					<div class="designer-toolbar">
+						<label for="plate-size-select">Plate size</label>
+						<select id="plate-size-select" aria-label="Plate size">
+							<option value="6">6-well</option>
+							<option value="12">12-well</option>
+							<option value="24">24-well</option>
+							<option value="48">48-well</option>
+							<option value="96" selected>96-well</option>
+							<option value="384">384-well</option>
+						</select>
+						<button id="clear-selection" type="button" class="designer-action">Clear selection</button>
+					</div>
+					<p id="selection-hint" class="helper-text"></p>
+					<div id="interactive-plate" class="plate-grid-wrap" role="grid" aria-label="Interactive plate"></div>
+				</article>
+
+				<article class="designer-panel">
+					<div class="designer-subhead">
+						<h3>Well Groups</h3>
+						<button id="add-group" type="button" class="designer-action">+ Create Group</button>
+					</div>
+					<div id="groups-list" class="additives-list"></div>
+					<div class="designer-subhead">
+						<h3>Export Preview</h3>
+						<div class="designer-actions" role="group" aria-label="Plate export actions">
+							<button id="download-plate-json" type="button" class="designer-action">Download/Save JSON</button>
+							<button id="send-to-dashboard" type="button" class="designer-action">Export to Illucidate</button>
+						</div>
+					</div>
+					<pre id="plate-export" class="plate-export" aria-live="polite"></pre>
+				</article>
+			</div>
+		</section>
+	</main>
+
+	<script type="module" src="scripts/plate-designer.js"></script>
+</body>
+</html>

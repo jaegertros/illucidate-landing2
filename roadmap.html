@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Illucidate | Roadmap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/site.css">
+</head>
+<body>
+  <div class="background-noise" aria-hidden="true"></div>
+  <main class="page-shell">
+    <nav class="top-command-bar reveal" aria-label="Site navigation">
+      <div class="page-links">
+        <span class="nav-group-label">Pages</span>
+        <a href="/" class="ui-chip">Dashboard</a>
+        <a href="/designer" class="ui-chip">Plate Designer</a>
+        <a href="/rationale" class="ui-chip">Rationale</a>
+        <a href="/bio" class="ui-chip">Bio</a>
+        <a href="/roadmap" class="ui-chip is-active" aria-current="page">Roadmap</a>
+        <a href="/cite" class="ui-chip">Cite</a>
+      </div>
+      <div class="utility-links">
+        <span class="nav-group-label">Tools</span>
+        <a href="https://colab.research.google.com/github/jaegertros/illucidate-landing/blob/main/illucidate/notebooks/01_quickstart_colab.ipynb" class="ui-chip is-small" target="_blank" rel="noopener noreferrer">Open Colab</a>
+        <a href="https://buymeacoffee.com/cwaddell13" class="ui-chip is-small" target="_blank" rel="noopener noreferrer">Buy Me a Coffee</a>
+      </div>
+    </nav>
+
+    <header class="hero reveal">
+      <p class="page-crumb" aria-label="Breadcrumb">Home / Roadmap</p>
+      <p class="kicker">Roadmap</p>
+      <h1>Planned growth</h1>
+      <p class="hero-copy">A staged plan for implementation, validation, and community release.</p>
+    </header>
+
+    <section class="method-section reveal" aria-labelledby="phase1-title">
+      <h2 id="phase1-title">Phase 1 — Core implementation (current)</h2>
+      <p>Build and harden plate reader parsing, feature generation, and statistical analysis foundations, with initial validation on E. coli O157:H7 datasets.</p>
+    </section>
+
+    <section class="method-section reveal" aria-labelledby="phase2-title">
+      <h2 id="phase2-title">Phase 2 — Validation and documentation (next)</h2>
+      <p>Expand analysis across published datasets, improve reproducible documentation, and provide clear tutorial notebooks and benchmarking references.</p>
+    </section>
+
+    <section class="method-section reveal" aria-labelledby="phase3-title">
+      <h2 id="phase3-title">Phase 3 — Community release (future)</h2>
+      <p>Support additional plate reader adapters, richer notebook workflows, example datasets with attribution, and broader API-level usability.</p>
+    </section>
+  </main>
+</body>
+</html>

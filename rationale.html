@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Illucidate | Rationale</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/site.css">
+</head>
+<body>
+  <div class="background-noise" aria-hidden="true"></div>
+  <main class="page-shell">
+    <nav class="top-command-bar reveal" aria-label="Site navigation">
+      <div class="page-links">
+        <span class="nav-group-label">Pages</span>
+        <a href="/" class="ui-chip">Dashboard</a>
+        <a href="/designer" class="ui-chip">Plate Designer</a>
+        <a href="/rationale" class="ui-chip is-active" aria-current="page">Rationale</a>
+        <a href="/bio" class="ui-chip">Bio</a>
+        <a href="/roadmap" class="ui-chip">Roadmap</a>
+        <a href="/cite" class="ui-chip">Cite</a>
+      </div>
+      <div class="utility-links">
+        <span class="nav-group-label">Tools</span>
+        <a href="https://colab.research.google.com/github/jaegertros/illucidate-landing/blob/main/illucidate/notebooks/01_quickstart_colab.ipynb" class="ui-chip is-small" target="_blank" rel="noopener noreferrer">Open Colab</a>
+        <a href="https://buymeacoffee.com/cwaddell13" class="ui-chip is-small" target="_blank" rel="noopener noreferrer">Buy Me a Coffee</a>
+      </div>
+    </nav>
+
+    <header class="hero reveal">
+      <p class="page-crumb" aria-label="Breadcrumb">Home / Rationale</p>
+      <p class="kicker">Rationale</p>
+      <h1>Why this work matters</h1>
+      <p class="hero-copy">Illucidate is built around a practical gap: rich assay data is often analyzed one channel at a time, which can hide early multivariate detection signals.</p>
+    </header>
+
+    <section class="method-section reveal" aria-labelledby="rationale-title">
+      <h2 id="rationale-title">The core issue</h2>
+      <p>Traditional workflows often split samples into separate confirmation pathways and treat OD, luminescence, timing, and related signals independently. That can delay useful conclusions even when the data already contains earlier combined patterns.</p>
+      <p>Illucidate focuses on multivariate, time-structured analysis so relationships between measurements can be seen sooner and interpreted more clearly.</p>
+    </section>
+
+    <section class="method-section reveal" aria-labelledby="name-title">
+      <h2 id="name-title">About the name</h2>
+      <p><strong>Illucidate</strong> combines <strong>Illuminate</strong> and <strong>Elucidate</strong>: bring signals to light and make their meaning clear.</p>
+    </section>
+  </main>
+</body>
+</html>

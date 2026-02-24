@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Illucidate | Bio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/site.css">
+</head>
+<body>
+  <div class="background-noise" aria-hidden="true"></div>
+  <main class="page-shell">
+    <nav class="top-command-bar reveal" aria-label="Site navigation">
+      <div class="page-links">
+        <span class="nav-group-label">Pages</span>
+        <a href="/" class="ui-chip">Dashboard</a>
+        <a href="/designer" class="ui-chip">Plate Designer</a>
+        <a href="/rationale" class="ui-chip">Rationale</a>
+        <a href="/bio" class="ui-chip is-active" aria-current="page">Bio</a>
+        <a href="/roadmap" class="ui-chip">Roadmap</a>
+        <a href="/cite" class="ui-chip">Cite</a>
+      </div>
+      <div class="utility-links">
+        <span class="nav-group-label">Tools</span>
+        <a href="https://colab.research.google.com/github/jaegertros/illucidate-landing/blob/main/illucidate/notebooks/01_quickstart_colab.ipynb" class="ui-chip is-small" target="_blank" rel="noopener noreferrer">Open Colab</a>
+        <a href="https://buymeacoffee.com/cwaddell13" class="ui-chip is-small" target="_blank" rel="noopener noreferrer">Buy Me a Coffee</a>
+      </div>
+    </nav>
+
+    <header class="hero reveal">
+      <p class="page-crumb" aria-label="Breadcrumb">Home / Bio</p>
+      <p class="kicker">Bio</p>
+      <h1>Research background</h1>
+      <p class="hero-copy">This project is grounded in early pathogen detection research, including work with bioluminescent reporter phages and time-series plate-reader data.</p>
+    </header>
+
+    <section class="method-section reveal" aria-labelledby="bio-title">
+      <h2 id="bio-title">Context</h2>
+      <p>Illucidate is under active development as part of graduate research at Purdue University. The direction comes from practical assay analysis needs: combining OD, luminescence, and timing signals to improve early detection decision quality.</p>
+      <p>The broader aim is reproducible, open, and statistically grounded analysis that supports both research workflows and future translational use cases.</p>
+    </section>
+
+    <section class="method-section reveal" aria-labelledby="status-title">
+      <h2 id="status-title">Current status</h2>
+      <p>Version status is alpha and core components are being validated. Community collaboration, dataset attribution, and transparent methodology are treated as first-class design requirements.</p>
+    </section>
+  </main>
+</body>
+</html>

@@ -12,7 +12,25 @@
 <body>
   <div class="background-noise" aria-hidden="true"></div>
   <main class="page-shell">
+    <nav class="top-command-bar reveal" aria-label="Site navigation">
+      <div class="page-links">
+        <span class="nav-group-label">Pages</span>
+        <a href="/" class="ui-chip is-active" aria-current="page">Dashboard</a>
+        <a href="/designer" class="ui-chip">Plate Designer</a>
+        <a href="/rationale" class="ui-chip">Rationale</a>
+        <a href="/bio" class="ui-chip">Bio</a>
+        <a href="/roadmap" class="ui-chip">Roadmap</a>
+        <a href="/cite" class="ui-chip">Cite</a>
+      </div>
+      <div class="utility-links">
+        <span class="nav-group-label">Tools</span>
+        <a href="https://colab.research.google.com/github/jaegertros/illucidate-landing/blob/main/illucidate/notebooks/01_quickstart_colab.ipynb" class="ui-chip is-small" target="_blank" rel="noopener noreferrer">Open Colab</a>
+        <a href="https://buymeacoffee.com/cwaddell13" class="ui-chip is-small" target="_blank" rel="noopener noreferrer">Buy Me a Coffee</a>
+      </div>
+    </nav>
+
     <header class="hero reveal">
+      <p class="page-crumb" aria-label="Breadcrumb">Home / Dashboard</p>
       <div class="hero-brand">
         <img src="assets/illucidate_logo2.svg" alt="Illucidate logo" class="hero-logo">
         <div>
@@ -86,44 +104,6 @@
         </div>
         <div id="heatmap-chart" class="panel-body chart-host" role="img" aria-label="96-well heatmap"></div>
       </article>
-    </section>
-
-    <section class="plate-designer reveal" aria-labelledby="plate-designer-title">
-      <div class="section-head">
-        <h2 id="plate-designer-title">Plate Composition Designer</h2>
-        <p class="helper-text">Choose a plate format, select wells, and map additives with volumes and notes.</p>
-      </div>
-
-      <div class="designer-grid">
-        <article class="designer-panel">
-          <div class="designer-toolbar">
-            <label for="plate-size-select">Plate size</label>
-            <select id="plate-size-select" aria-label="Plate size">
-              <option value="6">6-well</option>
-              <option value="12">12-well</option>
-              <option value="24">24-well</option>
-              <option value="48">48-well</option>
-              <option value="96" selected>96-well</option>
-              <option value="384">384-well</option>
-            </select>
-            <button id="clear-selection" type="button" class="designer-action">Clear selection</button>
-          </div>
-          <p id="selection-hint" class="helper-text"></p>
-          <div id="interactive-plate" class="plate-grid-wrap" role="grid" aria-label="Interactive plate"></div>
-        </article>
-
-        <article class="designer-panel">
-          <div class="designer-subhead">
-            <h3>Additives</h3>
-            <button id="add-additive" type="button" class="designer-action">+ Add additive</button>
-          </div>
-          <div id="additives-list" class="additives-list"></div>
-          <div class="designer-subhead">
-            <h3>Export Preview</h3>
-          </div>
-          <pre id="plate-export" class="plate-export" aria-live="polite"></pre>
-        </article>
-      </div>
     </section>
 
     <section class="method-section reveal" aria-labelledby="method-title">

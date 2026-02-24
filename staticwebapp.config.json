@@ -1,0 +1,69 @@
+{
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/assets/*",
+      "/styles/*",
+      "/scripts/*",
+      "/data/*",
+      "/*.css",
+      "/*.js",
+      "/*.json",
+      "/*.svg",
+      "/*.png",
+      "/*.jpg",
+      "/*.ico"
+    ]
+  },
+  "routes": [
+    {
+      "route": "/",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/designer",
+      "rewrite": "/designer.html"
+    },
+    {
+      "route": "/rationale",
+      "rewrite": "/rationale.html"
+    },
+    {
+      "route": "/bio",
+      "rewrite": "/bio.html"
+    },
+    {
+      "route": "/roadmap",
+      "rewrite": "/roadmap.html"
+    },
+    {
+      "route": "/cite",
+      "rewrite": "/cite.html"
+    },
+    {
+      "route": "/designer.html",
+      "redirect": "/designer",
+      "statusCode": 301
+    },
+    {
+      "route": "/rationale.html",
+      "redirect": "/rationale",
+      "statusCode": 301
+    },
+    {
+      "route": "/bio.html",
+      "redirect": "/bio",
+      "statusCode": 301
+    },
+    {
+      "route": "/roadmap.html",
+      "redirect": "/roadmap",
+      "statusCode": 301
+    },
+    {
+      "route": "/cite.html",
+      "redirect": "/cite",
+      "statusCode": 301
+    }
+  ]
+}

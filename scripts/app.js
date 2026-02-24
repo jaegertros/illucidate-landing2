@@ -20,15 +20,6 @@ const METRIC_LABELS = {
 };
 
 const GROUP_COLOR_PALETTE = ["#4fc3b8", "#4d9fd1", "#f3cf73", "#ef8f8f", "#b2a3ff", "#8be48d"];
-const PLATE_LAYOUTS = {
-  6: { rows: 2, cols: 3 },
-  12: { rows: 3, cols: 4 },
-  24: { rows: 4, cols: 6 },
-  48: { rows: 6, cols: 8 },
-  96: { rows: 8, cols: 12 },
-  384: { rows: 16, cols: 24 }
-};
-const ADDITIVE_COLORS = ["#4fc3b8", "#4d9fd1", "#f3cf73", "#ef8f8f", "#b2a3ff", "#8be48d", "#f7a6ff", "#87d9ff"];
 
 const dom = {
   metricButtons: Array.from(document.querySelectorAll("[data-metric]")),
@@ -39,13 +30,6 @@ const dom = {
   seriesChart: document.getElementById("series-chart"),
   featureChart: document.getElementById("feature-chart"),
   heatmapChart: document.getElementById("heatmap-chart"),
-  plateSizeSelect: document.getElementById("plate-size-select"),
-  clearSelection: document.getElementById("clear-selection"),
-  selectionHint: document.getElementById("selection-hint"),
-  interactivePlate: document.getElementById("interactive-plate"),
-  addAdditive: document.getElementById("add-additive"),
-  additivesList: document.getElementById("additives-list"),
-  plateExport: document.getElementById("plate-export"),
   leadForm: document.getElementById("supabase-lead-form"),
   leadFormStatus: document.getElementById("lead-form-status")
 };
@@ -60,16 +44,8 @@ const app = {
     visibleGroups: new Set(),
     targetGroup: null,
     timeIndex: 0
-  },
-  plateDesigner: {
-    plateSize: 96,
-    selectedWells: new Set(),
-    anchorWell: null,
-    additives: []
   }
 };
-
-let additiveIdCounter = 1;
 
 function setMetricButtonState(metric) {
   for (const button of dom.metricButtons) {
@@ -77,290 +53,6 @@ function setMetricButtonState(metric) {
     button.classList.toggle("is-active", isActive);
     button.setAttribute("aria-checked", String(isActive));
   }
-}
-
-function wellName(row, col) {
-  const rowLabel = String.fromCharCode(65 + row);
-  return `${rowLabel}${col + 1}`;
-}
-
-function getPlateLayout() {
-  return PLATE_LAYOUTS[app.plateDesigner.plateSize] || PLATE_LAYOUTS[96];
-}
-
-function getSelectionLabel() {
-  const count = app.plateDesigner.selectedWells.size;
-  if (!count) {
-    return "Tip: click a well to select. Ctrl/Cmd-click adds or removes. Shift-click selects a row/column range from the last anchor.";
-  }
-  return `${count} well${count === 1 ? "" : "s"} selected.`;
-}
-
-function createAdditive() {
-  const id = additiveIdCounter++;
-  const color = ADDITIVE_COLORS[(id - 1) % ADDITIVE_COLORS.length];
-  return {
-    id,
-    name: `Additive ${id}`,
-    volumeUl: "",
-    notes: "",
-    color,
-    wells: new Set()
-  };
-}
-
-function resetPlateDesignerForSize() {
-  app.plateDesigner.selectedWells = new Set();
-  app.plateDesigner.anchorWell = null;
-  for (const additive of app.plateDesigner.additives) {
-    additive.wells = new Set();
-  }
-  renderPlateDesigner();
-}
-
-function applySelectionToAdditive(additiveId) {
-  const additive = app.plateDesigner.additives.find((item) => item.id === additiveId);
-  if (!additive || !app.plateDesigner.selectedWells.size) {
-    return;
-  }
-  additive.wells = new Set([...additive.wells, ...app.plateDesigner.selectedWells]);
-  renderPlateDesigner();
-}
-
-function removeAdditive(additiveId) {
-  app.plateDesigner.additives = app.plateDesigner.additives.filter((item) => item.id !== additiveId);
-  renderPlateDesigner();
-}
-
-function clearSelection() {
-  app.plateDesigner.selectedWells = new Set();
-  app.plateDesigner.anchorWell = null;
-  renderPlateDesigner();
-}
-
-function updateExportPreview() {
-  if (!dom.plateExport) {
-    return;
-  }
-  const payload = {
-    plate_size: app.plateDesigner.plateSize,
-    additives: app.plateDesigner.additives.map((additive) => ({
-      name: additive.name,
-      volume_uL: additive.volumeUl ? Number(additive.volumeUl) : null,
-      notes: additive.notes || null,
-      color: additive.color,
-      wells: [...additive.wells].sort()
-    }))
-  };
-  dom.plateExport.textContent = JSON.stringify(payload, null, 2);
-}
-
-function getWellColor(well) {
-  for (const additive of app.plateDesigner.additives) {
-    if (additive.wells.has(well)) {
-      return additive.color;
-    }
-  }
-  return null;
-}
-
-function handleWellSelection(event, well, row, col) {
-  const next = new Set(app.plateDesigner.selectedWells);
-  const anchor = app.plateDesigner.anchorWell;
-  const useRange = event.shiftKey && anchor;
-  const additiveMode = event.ctrlKey || event.metaKey || useRange;
-
-  if (!additiveMode) {
-    next.clear();
-  }
-
-  if (useRange) {
-    if (anchor.row === row) {
-      const start = Math.min(anchor.col, col);
-      const end = Math.max(anchor.col, col);
-      for (let cursor = start; cursor <= end; cursor += 1) {
-        next.add(wellName(row, cursor));
-      }
-    } else if (anchor.col === col) {
-      const start = Math.min(anchor.row, row);
-      const end = Math.max(anchor.row, row);
-      for (let cursor = start; cursor <= end; cursor += 1) {
-        next.add(wellName(cursor, col));
-      }
-    } else {
-      next.add(well);
-    }
-  } else if (event.ctrlKey || event.metaKey) {
-    if (next.has(well)) {
-      next.delete(well);
-    } else {
-      next.add(well);
-    }
-  } else {
-    next.add(well);
-  }
-
-  app.plateDesigner.selectedWells = next;
-  app.plateDesigner.anchorWell = { well, row, col };
-  renderPlateDesigner();
-}
-
-function renderInteractivePlate() {
-  if (!dom.interactivePlate) {
-    return;
-  }
-
-  const { rows, cols } = getPlateLayout();
-  dom.interactivePlate.replaceChildren();
-  dom.interactivePlate.style.setProperty("--plate-cols", String(cols));
-
-  const headerCorner = document.createElement("div");
-  headerCorner.className = "plate-axis plate-axis-corner";
-  headerCorner.textContent = "";
-  dom.interactivePlate.appendChild(headerCorner);
-
-  for (let col = 0; col < cols; col += 1) {
-    const axis = document.createElement("div");
-    axis.className = "plate-axis";
-    axis.textContent = String(col + 1);
-    dom.interactivePlate.appendChild(axis);
-  }
-
-  for (let row = 0; row < rows; row += 1) {
-    const rowAxis = document.createElement("div");
-    rowAxis.className = "plate-axis";
-    rowAxis.textContent = String.fromCharCode(65 + row);
-    dom.interactivePlate.appendChild(rowAxis);
-
-    for (let col = 0; col < cols; col += 1) {
-      const well = wellName(row, col);
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "plate-cell";
-      button.textContent = well;
-      button.setAttribute("role", "gridcell");
-
-      const mappedColor = getWellColor(well);
-      if (mappedColor) {
-        button.style.setProperty("--well-color", mappedColor);
-        button.classList.add("has-additive");
-      }
-
-      const isSelected = app.plateDesigner.selectedWells.has(well);
-      button.classList.toggle("is-selected", isSelected);
-      button.setAttribute("aria-selected", String(isSelected));
-      button.addEventListener("click", (event) => handleWellSelection(event, well, row, col));
-      dom.interactivePlate.appendChild(button);
-    }
-  }
-}
-
-function renderAdditives() {
-  if (!dom.additivesList) {
-    return;
-  }
-
-  dom.additivesList.replaceChildren();
-  const fragment = document.createDocumentFragment();
-
-  for (const additive of app.plateDesigner.additives) {
-    const card = document.createElement("article");
-    card.className = "additive-card";
-
-    const head = document.createElement("div");
-    head.className = "additive-head";
-
-    const nameInput = document.createElement("input");
-    nameInput.type = "text";
-    nameInput.value = additive.name;
-    nameInput.setAttribute("aria-label", "Additive name");
-    nameInput.addEventListener("input", () => {
-      additive.name = nameInput.value;
-      updateExportPreview();
-    });
-
-    const colorInput = document.createElement("input");
-    colorInput.type = "color";
-    colorInput.value = additive.color;
-    colorInput.setAttribute("aria-label", "Additive color");
-    colorInput.addEventListener("input", () => {
-      additive.color = colorInput.value;
-      renderPlateDesigner();
-    });
-
-    const deleteButton = document.createElement("button");
-    deleteButton.type = "button";
-    deleteButton.className = "designer-action danger";
-    deleteButton.textContent = "×";
-    deleteButton.setAttribute("aria-label", `Remove ${additive.name}`);
-    deleteButton.addEventListener("click", () => removeAdditive(additive.id));
-
-    head.append(nameInput, colorInput, deleteButton);
-
-    const fields = document.createElement("div");
-    fields.className = "additive-fields";
-
-    const volumeLabel = document.createElement("label");
-    volumeLabel.textContent = "Volume (uL)";
-    const volumeInput = document.createElement("input");
-    volumeInput.type = "number";
-    volumeInput.min = "0";
-    volumeInput.step = "0.1";
-    volumeInput.value = additive.volumeUl;
-    volumeInput.addEventListener("input", () => {
-      additive.volumeUl = volumeInput.value;
-      updateExportPreview();
-    });
-    volumeLabel.appendChild(volumeInput);
-
-    const notesLabel = document.createElement("label");
-    notesLabel.textContent = "Notes";
-    const notesInput = document.createElement("textarea");
-    notesInput.rows = 2;
-    notesInput.value = additive.notes;
-    notesInput.addEventListener("input", () => {
-      additive.notes = notesInput.value;
-      updateExportPreview();
-    });
-    notesLabel.appendChild(notesInput);
-
-    fields.append(volumeLabel, notesLabel);
-
-    const footer = document.createElement("div");
-    footer.className = "additive-footer";
-
-    const mapped = document.createElement("span");
-    mapped.textContent = `${additive.wells.size} well${additive.wells.size === 1 ? "" : "s"} assigned`;
-
-    const applyButton = document.createElement("button");
-    applyButton.type = "button";
-    applyButton.className = "designer-action";
-    applyButton.textContent = "Assign selected wells";
-    applyButton.disabled = !app.plateDesigner.selectedWells.size;
-    applyButton.addEventListener("click", () => applySelectionToAdditive(additive.id));
-
-    footer.append(mapped, applyButton);
-    card.append(head, fields, footer);
-    fragment.appendChild(card);
-  }
-
-  if (!app.plateDesigner.additives.length) {
-    const empty = document.createElement("p");
-    empty.className = "helper-text";
-    empty.textContent = "No additives yet. Add one to start mapping selected wells.";
-    fragment.appendChild(empty);
-  }
-
-  dom.additivesList.appendChild(fragment);
-}
-
-function renderPlateDesigner() {
-  if (dom.selectionHint) {
-    dom.selectionHint.textContent = getSelectionLabel();
-  }
-  renderInteractivePlate();
-  renderAdditives();
-  updateExportPreview();
 }
 
 function rowIndexFromWell(well) {
@@ -575,8 +267,6 @@ function exposeDebugSnapshot() {
   };
 }
 
-
-
 function bindLeadForm() {
   if (!dom.leadForm) {
     return;
@@ -642,21 +332,7 @@ function bindEvents() {
     }
     resizeTimer = window.setTimeout(renderAll, 140);
   });
-
-  dom.plateSizeSelect?.addEventListener("change", () => {
-    app.plateDesigner.plateSize = Number.parseInt(dom.plateSizeSelect.value, 10) || 96;
-    resetPlateDesignerForSize();
-  });
-
-  dom.clearSelection?.addEventListener("click", clearSelection);
-
-  dom.addAdditive?.addEventListener("click", () => {
-    app.plateDesigner.additives.push(createAdditive());
-    renderPlateDesigner();
-  });
 }
-
-
 
 function getSupabaseConfig() {
   const config = globalThis.__ILLUCIDATE_CONFIG || {};
@@ -708,6 +384,71 @@ function validateDatasetSchema(dataset) {
   }
 }
 
+function consumePendingCustomPlateMap() {
+  const storageKey = "illucidate_custom_plate";
+  const raw = sessionStorage.getItem(storageKey);
+  if (!raw) {
+    return null;
+  }
+
+  sessionStorage.removeItem(storageKey);
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") {
+      return null;
+    }
+    if (!Array.isArray(parsed.groups)) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function applyCustomPlateGrouping(dataset, customPlateMap) {
+  if (!dataset?.wells || !Array.isArray(customPlateMap?.groups)) {
+    return false;
+  }
+
+  const groupByWell = new Map();
+  for (const group of customPlateMap.groups) {
+    const name = typeof group?.name === "string" && group.name.trim()
+      ? group.name.trim()
+      : null;
+    const wells = Array.isArray(group?.wells) ? group.wells : [];
+    if (!name || !wells.length) {
+      continue;
+    }
+    for (const well of wells) {
+      const key = String(well || "").trim().toUpperCase();
+      if (key) {
+        groupByWell.set(key, name);
+      }
+    }
+  }
+
+  if (!groupByWell.size) {
+    return false;
+  }
+
+  for (const well of dataset.wells) {
+    const key = String(well?.well || "").trim().toUpperCase();
+    if (groupByWell.has(key)) {
+      well.group = groupByWell.get(key);
+    } else {
+      well.group = "Unassigned";
+    }
+  }
+
+  if (!dataset.meta || typeof dataset.meta !== "object") {
+    dataset.meta = {};
+  }
+  dataset.meta.groups = Array.from(new Set(dataset.wells.map((well) => well.group)));
+  return true;
+}
+
 async function bootstrap() {
   try {
     const response = await fetch("data/demo-dataset.json");
@@ -717,6 +458,11 @@ async function bootstrap() {
     const dataset = await response.json();
     validateDatasetSchema(dataset);
 
+    const pendingCustomPlateMap = consumePendingCustomPlateMap();
+    if (pendingCustomPlateMap) {
+      applyCustomPlateGrouping(dataset, pendingCustomPlateMap);
+    }
+
     app.data = dataset;
     app.groups = dataset.meta?.groups || Array.from(new Set(dataset.wells.map((well) => well.group)));
     app.groups.forEach((group, index) => app.colorByGroup.set(group, GROUP_COLOR_PALETTE[index % GROUP_COLOR_PALETTE.length]));
@@ -724,7 +470,6 @@ async function bootstrap() {
     app.state.targetGroup = app.groups.find((group) => group !== CONTROL_GROUP) || null;
     app.state.timeIndex = Math.min(6, Math.max(dataset.time.length - 1, 0));
     app.featureRows = app.data.wells.map((well) => computeWellFeatures(well, app.data.time));
-    app.plateDesigner.additives = [createAdditive()];
 
     renderGroupControls();
     syncTargetOptions();
@@ -734,7 +479,6 @@ async function bootstrap() {
     bindLeadForm();
     exposeDebugSnapshot();
     renderAll();
-    renderPlateDesigner();
 
     requestAnimationFrame(() => {
       document.body.classList.add("is-ready");
