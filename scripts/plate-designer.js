@@ -1,9 +1,24 @@
 const MEDIA_PRESETS = {
-  LB: { volumeUl: 200, notes: "Luria-Bertani broth" },
-  M9: { volumeUl: 200, notes: "M9 minimal medium" },
-  TSB: { volumeUl: 200, notes: "Tryptic Soy Broth" },
-  PBS: { volumeUl: 100, notes: "Phosphate-buffered saline" }
+  LB: { volumeUl: 200, unit: "uL", notes: "Luria-Bertani broth" },
+  M9: { volumeUl: 200, unit: "uL", notes: "M9 minimal medium" },
+  TSB: { volumeUl: 200, unit: "uL", notes: "Tryptic Soy Broth" },
+  PBS: { volumeUl: 100, unit: "uL", notes: "Phosphate-buffered saline" }
 };
+
+const UNIT_OPTIONS = [
+  { value: "uL", label: "µL" },
+  { value: "mL", label: "mL" },
+  { value: "mM", label: "mM" },
+  { value: "uM", label: "µM" },
+  { value: "nM", label: "nM" },
+  { value: "mg/mL", label: "mg/mL" },
+  { value: "ug/mL", label: "µg/mL" },
+  { value: "%v/v", label: "% v/v" },
+  { value: "%w/v", label: "% w/v" },
+  { value: "CFU/mL", label: "CFU/mL" },
+  { value: "PFU/mL", label: "PFU/mL" },
+  { value: "x", label: "x (fold)" }
+];
 
 const PLATE_LAYOUTS = {
   6: { rows: 2, cols: 3 },
@@ -331,12 +346,13 @@ function renderGroups() {
     presetSelect.addEventListener("change", () => {
       if (!presetSelect.value) return;
       if (presetSelect.value === "custom") {
-        group.additives.push({ name: "", volumeUl: "", notes: "" });
+        group.additives.push({ name: "", amount: "", unit: "uL", notes: "" });
       } else {
         const preset = MEDIA_PRESETS[presetSelect.value];
         group.additives.push({
           name: presetSelect.value,
-          volumeUl: preset.volumeUl,
+          amount: preset.volumeUl,
+          unit: preset.unit || "uL",
           notes: preset.notes
         });
       }
@@ -348,10 +364,17 @@ function renderGroups() {
     additivesContainer.append(additivesHead);
 
     group.additives.forEach((additive, index) => {
+      // Migrate legacy data: volumeUl → amount
+      if (additive.volumeUl !== undefined && additive.amount === undefined) {
+        additive.amount = additive.volumeUl;
+        additive.unit = additive.unit || "uL";
+      }
+
       const additiveRow = document.createElement("div");
       additiveRow.style.display = "flex";
       additiveRow.style.gap = "4px";
       additiveRow.style.marginTop = "4px";
+      additiveRow.style.alignItems = "center";
 
       const additiveName = document.createElement("input");
       additiveName.placeholder = "Name";
@@ -363,13 +386,29 @@ function renderGroups() {
         updateExportPreview();
       });
 
-      const additiveVolume = document.createElement("input");
-      additiveVolume.type = "number";
-      additiveVolume.placeholder = "uL";
-      additiveVolume.style.width = "55px";
-      additiveVolume.value = additive.volumeUl;
-      additiveVolume.addEventListener("input", () => {
-        additive.volumeUl = additiveVolume.value;
+      const additiveAmount = document.createElement("input");
+      additiveAmount.type = "number";
+      additiveAmount.placeholder = "Qty";
+      additiveAmount.style.width = "50px";
+      additiveAmount.value = additive.amount ?? "";
+      additiveAmount.addEventListener("input", () => {
+        additive.amount = additiveAmount.value;
+        updateExportPreview();
+      });
+
+      const unitSelect = document.createElement("select");
+      unitSelect.style.fontSize = "var(--fs-2xs)";
+      unitSelect.style.padding = "2px 4px";
+      unitSelect.style.width = "65px";
+      for (const opt of UNIT_OPTIONS) {
+        const option = document.createElement("option");
+        option.value = opt.value;
+        option.textContent = opt.label;
+        unitSelect.appendChild(option);
+      }
+      unitSelect.value = additive.unit || "uL";
+      unitSelect.addEventListener("change", () => {
+        additive.unit = unitSelect.value;
         updateExportPreview();
       });
 
@@ -382,7 +421,7 @@ function renderGroups() {
         renderGroups();
       });
 
-      additiveRow.append(additiveName, additiveVolume, removeAdditiveButton);
+      additiveRow.append(additiveName, additiveAmount, unitSelect, removeAdditiveButton);
       additivesContainer.append(additiveRow);
     });
 
@@ -430,7 +469,8 @@ function buildPayload() {
       organism: group.organism?.species ? group.organism : null,
       additives: group.additives.map((additive) => ({
         name: additive.name,
-        volume_uL: additive.volumeUl ? Number(additive.volumeUl) : null,
+        amount: additive.amount ? Number(additive.amount) : (additive.volumeUl ? Number(additive.volumeUl) : null),
+        unit: additive.unit || "uL",
         notes: additive.notes || null
       })),
       wells: [...group.wells].sort()
@@ -496,7 +536,8 @@ function maybeHydrateFromSession() {
       nextGroup.additives = Array.isArray(group.additives)
         ? group.additives.map((additive) => ({
             name: String(additive?.name || ""),
-            volumeUl: additive?.volume_uL ?? additive?.volumeUl ?? "",
+            amount: additive?.amount ?? additive?.volume_uL ?? additive?.volumeUl ?? "",
+            unit: String(additive?.unit || "uL"),
             notes: String(additive?.notes || "")
           }))
         : [];
