@@ -3,5 +3,6 @@
 window.__ILLUCIDATE_CONFIG = {
   supabaseUrl: "https://dcchldwxpwavtdmrctfz.supabase.co",
   supabaseAnonKey: "sb_publishable_ku6lR0_lmaGIyDqWMc8v_w_apXcD-EL",
-  leadsTable: "contact_leads"
+  leadsTable: "contact_leads",
+  storageBucket: "experiment-data"
 };
