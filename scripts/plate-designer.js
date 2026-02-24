@@ -80,7 +80,8 @@ function createGroup() {
     color,
     wells: new Set(),
     organism: { species: "", strain: "", cellCount: "" },
-    additives: []
+    additives: [],
+    expanded: false
   };
 }
 
@@ -262,36 +263,30 @@ function renderGroups() {
     });
     colorInput.addEventListener("change", updateExportPreview);
 
+    const expandBtn = document.createElement("button");
+    expandBtn.type = "button";
+    expandBtn.className = "designer-action group-expand-btn";
+    expandBtn.textContent = group.expanded ? "−" : "+";
+    expandBtn.title = group.expanded ? "Collapse" : "Expand";
+    expandBtn.addEventListener("click", () => {
+      group.expanded = !group.expanded;
+      renderGroups();
+    });
+
     const deleteGroupButton = document.createElement("button");
     deleteGroupButton.type = "button";
     deleteGroupButton.className = "designer-action danger";
     deleteGroupButton.textContent = "×";
     deleteGroupButton.addEventListener("click", () => removeGroup(group.id));
 
-    head.append(nameInput, colorInput, deleteGroupButton);
+    head.append(expandBtn, nameInput, colorInput, deleteGroupButton);
 
-    // Collapsible details section (organism + additives)
-    const detailsSection = document.createElement("div");
-    detailsSection.className = "collapsible-section";
-
-    // Summary line showing organism + additive count inline
-    const summaryParts = [];
-    if (group.organism.species) summaryParts.push(group.organism.species);
-    if (group.organism.strain) summaryParts.push(group.organism.strain);
-    if (group.additives.length) summaryParts.push(`${group.additives.length} additive(s)`);
-
-    const toggleBtn = document.createElement("button");
-    toggleBtn.type = "button";
-    toggleBtn.className = "collapse-toggle";
-    toggleBtn.textContent = summaryParts.length
-      ? `Details: ${summaryParts.join(" · ")}`
-      : "Add organism / additives...";
-    toggleBtn.addEventListener("click", () => {
-      const isCollapsed = detailsSection.classList.toggle("is-collapsed");
-      if (!isCollapsed) {
-        detailsSection.style.maxHeight = detailsSection.scrollHeight + "px";
-      }
-    });
+    // Collapsible body section
+    const bodySection = document.createElement("div");
+    bodySection.className = "collapsible-section";
+    if (!group.expanded) {
+      bodySection.classList.add("is-collapsed");
+    }
 
     const organismFields = document.createElement("div");
     organismFields.className = "additive-fields";
@@ -425,13 +420,6 @@ function renderGroups() {
       additivesContainer.append(additiveRow);
     });
 
-    detailsSection.append(organismFields, additivesContainer);
-    // Start collapsed if nothing is filled in
-    const hasDetails = group.organism.species || group.organism.strain || group.additives.length;
-    if (!hasDetails) {
-      detailsSection.classList.add("is-collapsed");
-    }
-
     const footer = document.createElement("div");
     footer.className = "additive-footer";
 
@@ -446,7 +434,23 @@ function renderGroups() {
     applyButton.addEventListener("click", () => applySelectionToGroup(group.id));
 
     footer.append(mapped, applyButton);
-    card.append(head, toggleBtn, detailsSection, footer);
+
+    bodySection.append(organismFields, additivesContainer, footer);
+
+    // Build summary line for collapsed state
+    const summaryParts = [];
+    if (group.wells.size) summaryParts.push(`${group.wells.size} well(s)`);
+    if (group.organism.species) summaryParts.push(group.organism.species);
+    if (group.additives.length) summaryParts.push(`${group.additives.length} additive(s)`);
+    const summaryEl = document.createElement("span");
+    summaryEl.className = "group-summary";
+    summaryEl.textContent = summaryParts.join(" · ") || "empty";
+
+    if (group.expanded) {
+      card.append(head, bodySection);
+    } else {
+      card.append(head, summaryEl);
+    }
     fragment.appendChild(card);
   }
 

@@ -778,33 +778,35 @@ input[type="range"] {
   gap: var(--space-1);
 }
 
-.additive-card .collapsible-section {
-  overflow: hidden;
-  transition: max-height 200ms ease;
-}
 
-.additive-card .collapsible-section.is-collapsed {
-  max-height: 0 !important;
-}
-
-.additive-card .collapse-toggle {
-  border: 0;
-  background: transparent;
-  color: var(--slate-500);
-  font-size: var(--fs-2xs);
-  cursor: pointer;
-  padding: 2px 0;
-  text-align: left;
-}
-
-.additive-card .collapse-toggle:hover {
-  color: var(--slate-300);
-}
 
 .additive-head {
   display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: var(--space-2);
+  grid-template-columns: auto 1fr auto auto;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+.group-expand-btn {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: 1;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.group-summary {
+  color: var(--slate-500);
+  font-size: var(--fs-2xs);
+  padding: 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .additive-head input[type="text"],
