@@ -570,9 +570,14 @@ async function bootstrap() {
         triggerEl: document.getElementById("explore-data-btn")
       });
     } catch (browserError) {
-      console.warn("Experiment browser module not loaded:", browserError.message);
-    }
-
+            console.warn("Experiment browser module not loaded:", browserError.message);
+      const exploreBtn = document.getElementById("explore-data-btn");
+      if (exploreBtn) {
+        exploreBtn.disabled = true;
+        exploreBtn.setAttribute("aria-disabled", "true");
+        exploreBtn.classList.add("is-disabled");
+        exploreBtn.title = "Explore Data is currently unavailable.";
+      }
     requestAnimationFrame(() => {
       document.body.classList.add("is-ready");
     });

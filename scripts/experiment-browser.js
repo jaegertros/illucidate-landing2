@@ -59,7 +59,12 @@ async function fetchExperimentData(processedJsonPath) {
     throw new Error("This experiment has no processed data file.");
   }
 
-  const storageUrl = `${config.url}/storage/v1/object/public/${config.bucket}/${processedJsonPath}`;
+    const encodedBucket = encodeURIComponent(config.bucket);
+  const encodedPath = processedJsonPath
+    .split("/")
+    .map(encodeURIComponent)
+    .join("/");
+  const storageUrl = `${config.url}/storage/v1/object/public/${encodedBucket}/${encodedPath}`;
   const response = await fetch(storageUrl);
   if (!response.ok) {
     throw new Error(`Failed to load experiment data (${response.status})`);
@@ -173,7 +178,7 @@ function buildDrawerContent(containerEl, experiments, onLoadClick) {
   closeBtn.type = "button";
   closeBtn.className = "experiment-drawer-close";
   closeBtn.setAttribute("aria-label", "Close drawer");
-  closeBtn.innerHTML = "&times;";
+  closeBtn.textContent = "×";
   closeBtn.addEventListener("click", () => closeDrawer(containerEl));
   header.appendChild(closeBtn);
 
@@ -210,20 +215,19 @@ function openDrawer(containerEl, backdropEl) {
   });
 }
 
-function closeDrawer(containerEl) {
+function closeDrawer(containerEl, backdropEl) {
   if (!containerEl) {
     return;
   }
-  const backdropEl = document.getElementById("drawer-backdrop");
+  const effectiveBackdrop = backdropEl || document.getElementById("drawer-backdrop");
   containerEl.classList.remove("is-open");
-  if (backdropEl) {
-    backdropEl.classList.remove("is-visible");
+  if (effectiveBackdrop) {
+    effectiveBackdrop.classList.remove("is-visible");
   }
-
   const onEnd = () => {
     containerEl.hidden = true;
-    if (backdropEl) {
-      backdropEl.hidden = true;
+    if (effectiveBackdrop) {
+      effectiveBackdrop.hidden = true;
     }
     containerEl.removeEventListener("transitionend", onEnd);
   };
@@ -251,10 +255,15 @@ export function initBrowser({ onLoad, containerEl, backdropEl, triggerEl }) {
       onLoad(dataset, exp.title || "Untitled experiment");
       closeDrawer(containerEl);
     } catch (error) {
-      const errEl = document.createElement("p");
-      errEl.className = "empty-state";
-      errEl.textContent = error.message;
-      containerEl.querySelector(".experiment-drawer-body")?.prepend(errEl);
+      const bodyEl = containerEl.querySelector(".experiment-drawer-body");
+      if (bodyEl) {
+        // Remove any existing error messages to avoid stacking multiple .empty-state elements
+        bodyEl.querySelectorAll(".empty-state").forEach((el) => el.remove());
+        const errEl = document.createElement("p");
+        errEl.className = "empty-state";
+        errEl.textContent = error.message;
+        bodyEl.prepend(errEl);
+      }
     } finally {
       for (const btn of loadBtns) {
         btn.disabled = false;
