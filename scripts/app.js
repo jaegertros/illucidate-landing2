@@ -449,36 +449,129 @@ function applyCustomPlateGrouping(dataset, customPlateMap) {
   return true;
 }
 
+function initializeDashboard(dataset) {
+  validateDatasetSchema(dataset);
+
+  const pendingCustomPlateMap = consumePendingCustomPlateMap();
+  if (pendingCustomPlateMap) {
+    applyCustomPlateGrouping(dataset, pendingCustomPlateMap);
+  }
+
+  app.data = dataset;
+  app.groups = dataset.meta?.groups || Array.from(new Set(dataset.wells.map((well) => well.group)));
+  app.colorByGroup.clear();
+  app.groups.forEach((group, index) => app.colorByGroup.set(group, GROUP_COLOR_PALETTE[index % GROUP_COLOR_PALETTE.length]));
+  app.state.visibleGroups = new Set(app.groups);
+  app.state.targetGroup = app.groups.find((group) => group !== CONTROL_GROUP) || null;
+  app.state.timeIndex = Math.min(6, Math.max(dataset.time.length - 1, 0));
+  app.featureRows = app.data.wells.map((well) => computeWellFeatures(well, app.data.time));
+
+  renderGroupControls();
+  syncTargetOptions();
+  dom.timeSlider.max = String(Math.max(dataset.time.length - 1, 0));
+  dom.timeSlider.value = String(app.state.timeIndex);
+  exposeDebugSnapshot();
+  renderAll();
+}
+
+function showActiveBanner(label) {
+  let banner = document.getElementById("active-experiment-banner");
+  if (!banner) {
+    return;
+  }
+  banner.hidden = false;
+  const nameEl = banner.querySelector(".active-banner-name");
+  if (nameEl) {
+    nameEl.textContent = label;
+  }
+}
+
+function hideActiveBanner() {
+  const banner = document.getElementById("active-experiment-banner");
+  if (banner) {
+    banner.hidden = true;
+  }
+}
+
+async function loadDemoDataset() {
+  const response = await fetch("data/demo-dataset.json");
+  if (!response.ok) {
+    throw new Error(`Failed to load demo data (${response.status})`);
+  }
+  return response.json();
+}
+
+function bindFileUpload() {
+  const fileBtn = document.getElementById("load-file-btn");
+  const fileInput = document.getElementById("file-upload-input");
+  if (!fileBtn || !fileInput) {
+    return;
+  }
+
+  fileBtn.addEventListener("click", () => fileInput.click());
+
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files[0];
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const dataset = JSON.parse(reader.result);
+        initializeDashboard(dataset);
+        showActiveBanner(file.name);
+      } catch (error) {
+        const message = `File load error: ${error.message}`;
+        dom.seriesChart.innerHTML = `<p class="empty-state">${message}</p>`;
+        console.error(error);
+      }
+    };
+    reader.readAsText(file);
+    fileInput.value = "";
+  });
+}
+
+function bindResetButton() {
+  const resetBtn = document.getElementById("reset-demo-btn");
+  if (!resetBtn) {
+    return;
+  }
+  resetBtn.addEventListener("click", async () => {
+    try {
+      const dataset = await loadDemoDataset();
+      initializeDashboard(dataset);
+      hideActiveBanner();
+    } catch (error) {
+      console.error("Reset failed:", error);
+    }
+  });
+}
+
 async function bootstrap() {
   try {
-    const response = await fetch("data/demo-dataset.json");
-    if (!response.ok) {
-      throw new Error(`Failed to load demo data (${response.status})`);
-    }
-    const dataset = await response.json();
-    validateDatasetSchema(dataset);
-
-    const pendingCustomPlateMap = consumePendingCustomPlateMap();
-    if (pendingCustomPlateMap) {
-      applyCustomPlateGrouping(dataset, pendingCustomPlateMap);
-    }
-
-    app.data = dataset;
-    app.groups = dataset.meta?.groups || Array.from(new Set(dataset.wells.map((well) => well.group)));
-    app.groups.forEach((group, index) => app.colorByGroup.set(group, GROUP_COLOR_PALETTE[index % GROUP_COLOR_PALETTE.length]));
-    app.state.visibleGroups = new Set(app.groups);
-    app.state.targetGroup = app.groups.find((group) => group !== CONTROL_GROUP) || null;
-    app.state.timeIndex = Math.min(6, Math.max(dataset.time.length - 1, 0));
-    app.featureRows = app.data.wells.map((well) => computeWellFeatures(well, app.data.time));
-
-    renderGroupControls();
-    syncTargetOptions();
-    dom.timeSlider.max = String(Math.max(dataset.time.length - 1, 0));
-    dom.timeSlider.value = String(app.state.timeIndex);
+    const dataset = await loadDemoDataset();
+    initializeDashboard(dataset);
     bindEvents();
     bindLeadForm();
-    exposeDebugSnapshot();
-    renderAll();
+    bindFileUpload();
+    bindResetButton();
+
+    try {
+      const { initBrowser } = await import("./experiment-browser.js");
+      initBrowser({
+        onLoad(dataset, title) {
+          initializeDashboard(dataset);
+          showActiveBanner(title);
+        },
+        containerEl: document.getElementById("experiment-drawer"),
+        backdropEl: document.getElementById("drawer-backdrop"),
+        triggerEl: document.getElementById("explore-data-btn")
+      });
+    } catch (browserError) {
+      console.warn("Experiment browser module not loaded:", browserError.message);
+    }
 
     requestAnimationFrame(() => {
       document.body.classList.add("is-ready");
