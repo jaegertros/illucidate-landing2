@@ -1,6 +1,7 @@
 import {
   computeDerivedSeries,
   computeWellFeatures,
+  computeMultiChannelFeatures,
   rankFeaturesByComparison,
   computeDetectionScore,
   computeZStats,
@@ -11,18 +12,25 @@ import {
   renderFeatureChart,
   renderPlateHeatmap
 } from "./charts.js";
+import { parseVictorXlsx } from "./xlsx-parser.js";
 
 const CONTROL_GROUP = "Control";
-const METRIC_LABELS = {
+const DEFAULT_METRIC_LABELS = {
   od600: "OD600",
   luminescence: "Luminescence (RLU)",
   ratio: "RLU/OD600"
 };
 
+let METRIC_LABELS = { ...DEFAULT_METRIC_LABELS };
+
 const GROUP_COLOR_PALETTE = ["#4fc3b8", "#4d9fd1", "#f3cf73", "#ef8f8f", "#b2a3ff", "#8be48d"];
 
 const dom = {
   metricButtons: Array.from(document.querySelectorAll("[data-metric]")),
+  metricToggle: document.getElementById("metric-toggle"),
+  metricToggleExtra: document.getElementById("metric-toggle-extra"),
+  channelCard: document.getElementById("channel-card"),
+  channelControls: document.getElementById("channel-controls"),
   groupControls: document.getElementById("group-controls"),
   targetSelect: document.getElementById("target-group"),
   timeSlider: document.getElementById("time-slider"),
@@ -39,16 +47,21 @@ const app = {
   featureRows: [],
   groups: [],
   colorByGroup: new Map(),
+  channels: null,         // null = legacy (od600/lum/ratio only)
+  availableMetrics: [],   // all metric keys available in the dataset
   state: {
     metric: "od600",
     visibleGroups: new Set(),
     targetGroup: null,
-    timeIndex: 0
+    timeIndex: 0,
+    activeChannels: new Set()  // channels selected for multivariate analysis
   }
 };
 
 function setMetricButtonState(metric) {
-  for (const button of dom.metricButtons) {
+  // Re-query in case extra buttons were added
+  const allButtons = document.querySelectorAll("[data-metric]");
+  for (const button of allButtons) {
     const isActive = button.dataset.metric === metric;
     button.classList.toggle("is-active", isActive);
     button.setAttribute("aria-checked", String(isActive));
@@ -116,6 +129,109 @@ function renderGroupControls() {
   dom.groupControls.appendChild(fragment);
 }
 
+function renderChannelControls() {
+  if (!dom.channelControls || !app.channels) {
+    if (dom.channelCard) dom.channelCard.hidden = true;
+    return;
+  }
+
+  dom.channelCard.hidden = false;
+  dom.channelControls.replaceChildren();
+  const fragment = document.createDocumentFragment();
+
+  // Get channel keys excluding "ratio" (it's virtual)
+  const channelKeys = Object.keys(app.channels).filter((k) => k !== "ratio");
+
+  for (const key of channelKeys) {
+    const info = app.channels[key];
+    const id = `channel-${key}`;
+
+    const label = document.createElement("label");
+    label.className = "group-option";
+    label.setAttribute("for", id);
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.id = id;
+    checkbox.value = key;
+    checkbox.checked = app.state.activeChannels.has(key);
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) {
+        app.state.activeChannels.add(key);
+      } else {
+        app.state.activeChannels.delete(key);
+      }
+      recomputeFeatures();
+      renderAll();
+    });
+
+    const text = document.createElement("span");
+    text.textContent = info.label || key;
+    text.style.fontSize = "var(--fs-xs)";
+
+    label.append(checkbox, text);
+    fragment.appendChild(label);
+  }
+
+  dom.channelControls.appendChild(fragment);
+}
+
+function renderMetricToggle() {
+  if (!app.channels || !dom.metricToggleExtra) {
+    dom.metricToggleExtra.hidden = true;
+    return;
+  }
+
+  // Find extra channels beyond the base 3
+  const extraKeys = app.availableMetrics.filter(
+    (k) => !["od600", "luminescence", "ratio"].includes(k)
+  );
+
+  if (!extraKeys.length) {
+    dom.metricToggleExtra.hidden = true;
+    return;
+  }
+
+  dom.metricToggleExtra.hidden = false;
+  dom.metricToggleExtra.replaceChildren();
+
+  for (const key of extraKeys) {
+    const label = METRIC_LABELS[key] || key;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "segment";
+    btn.dataset.metric = key;
+    btn.setAttribute("role", "radio");
+    btn.setAttribute("aria-checked", "false");
+    btn.textContent = label;
+    btn.addEventListener("click", () => {
+      app.state.metric = key;
+      renderAll();
+    });
+    dom.metricToggleExtra.appendChild(btn);
+  }
+
+  // Update dom.metricButtons to include the new ones
+  dom.metricButtons = Array.from(document.querySelectorAll("[data-metric]"));
+}
+
+function recomputeFeatures() {
+  if (!app.data) return;
+
+  const activeChannels = Array.from(app.state.activeChannels);
+  if (activeChannels.length > 1 && app.channels) {
+    // Multi-channel mode: compute features across all selected channels
+    app.featureRows = app.data.wells.map(
+      (well) => computeMultiChannelFeatures(well, app.data.time, activeChannels)
+    );
+  } else {
+    // Legacy single-channel mode
+    app.featureRows = app.data.wells.map(
+      (well) => computeWellFeatures(well, app.data.time)
+    );
+  }
+}
+
 function syncTargetOptions() {
   const visibleTargets = app.groups.filter(
     (group) => group !== CONTROL_GROUP && app.state.visibleGroups.has(group)
@@ -176,7 +292,7 @@ function buildHeatmapModel() {
   const timeLabel = `${((app.data.time[app.state.timeIndex] || 0) / 3600).toFixed(2)} h`;
   return {
     cells,
-    metricLabel: METRIC_LABELS[app.state.metric],
+    metricLabel: METRIC_LABELS[app.state.metric] || app.state.metric,
     timeLabel
   };
 }
@@ -187,7 +303,7 @@ function buildSeriesModel() {
     timeHours: app.data.time.map((seconds) => seconds / 3600),
     data: computeDerivedSeries(visibleWells, app.state.metric),
     colorByGroup: app.colorByGroup,
-    metricLabel: METRIC_LABELS[app.state.metric]
+    metricLabel: METRIC_LABELS[app.state.metric] || app.state.metric
   };
 }
 
@@ -311,6 +427,16 @@ function bindEvents() {
   for (const button of dom.metricButtons) {
     button.addEventListener("click", () => {
       app.state.metric = button.dataset.metric;
+      renderAll();
+    });
+  }
+
+  // Delegate clicks on the extra metric toggle (buttons added dynamically)
+  if (dom.metricToggleExtra) {
+    dom.metricToggleExtra.addEventListener("click", (event) => {
+      const btn = event.target.closest("[data-metric]");
+      if (!btn) return;
+      app.state.metric = btn.dataset.metric;
       renderAll();
     });
   }
@@ -464,9 +590,41 @@ function initializeDashboard(dataset) {
   app.state.visibleGroups = new Set(app.groups);
   app.state.targetGroup = app.groups.find((group) => group !== CONTROL_GROUP) || null;
   app.state.timeIndex = Math.min(6, Math.max(dataset.time.length - 1, 0));
-  app.featureRows = app.data.wells.map((well) => computeWellFeatures(well, app.data.time));
 
+  // Handle multi-channel datasets
+  if (dataset.channels && typeof dataset.channels === "object") {
+    app.channels = dataset.channels;
+    // Build metric labels from channel metadata
+    METRIC_LABELS = { ...DEFAULT_METRIC_LABELS };
+    for (const [key, info] of Object.entries(dataset.channels)) {
+      if (!METRIC_LABELS[key]) {
+        METRIC_LABELS[key] = info.label || key;
+      }
+    }
+    // Available metrics = channels from data
+    app.availableMetrics = dataset.meta?.channels || Object.keys(dataset.channels);
+    // Default active channels: all non-ratio channels
+    app.state.activeChannels = new Set(
+      app.availableMetrics.filter((k) => k !== "ratio")
+    );
+    // Default metric to first available
+    if (!app.availableMetrics.includes(app.state.metric)) {
+      app.state.metric = app.availableMetrics.includes("od600")
+        ? "od600"
+        : app.availableMetrics[0];
+    }
+  } else {
+    app.channels = null;
+    METRIC_LABELS = { ...DEFAULT_METRIC_LABELS };
+    app.availableMetrics = ["od600", "luminescence", "ratio"];
+    app.state.activeChannels = new Set(["od600", "luminescence"]);
+    app.state.metric = "od600";
+  }
+
+  recomputeFeatures();
   renderGroupControls();
+  renderChannelControls();
+  renderMetricToggle();
   syncTargetOptions();
   dom.timeSlider.max = String(Math.max(dataset.time.length - 1, 0));
   dom.timeSlider.value = String(app.state.timeIndex);
@@ -515,11 +673,20 @@ function bindFileUpload() {
     if (!file) {
       return;
     }
+  });
+}
+
+    const isXlsx = file.name.toLowerCase().endsWith(".xlsx");
 
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const dataset = JSON.parse(reader.result);
+        let dataset;
+        if (isXlsx) {
+          dataset = parseVictorXlsx(reader.result);
+        } else {
+          dataset = JSON.parse(reader.result);
+        }
         initializeDashboard(dataset);
         showActiveBanner(file.name);
       } catch (error) {
@@ -528,7 +695,12 @@ function bindFileUpload() {
         console.error(error);
       }
     };
-    reader.readAsText(file);
+
+    if (isXlsx) {
+      reader.readAsArrayBuffer(file);
+    } else {
+      reader.readAsText(file);
+    }
     fileInput.value = "";
   });
 }
@@ -557,6 +729,21 @@ async function bootstrap() {
     bindLeadForm();
     bindFileUpload();
     bindResetButton();
+
+    try {
+      const { initBrowser } = await import("./experiment-browser.js");
+      initBrowser({
+        onLoad(dataset, title) {
+          initializeDashboard(dataset);
+          showActiveBanner(title);
+        },
+        containerEl: document.getElementById("experiment-drawer"),
+        backdropEl: document.getElementById("drawer-backdrop"),
+        triggerEl: document.getElementById("explore-data-btn")
+      });
+    } catch (browserError) {
+      console.warn("Experiment browser module not loaded:", browserError.message);
+    }
 
     try {
       const { initBrowser } = await import("./experiment-browser.js");

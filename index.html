@@ -52,7 +52,7 @@
         <div class="data-source-actions">
           <button type="button" id="load-file-btn" class="data-source-btn">Load File</button>
           <button type="button" id="explore-data-btn" class="data-source-btn">Explore Data</button>
-          <input type="file" id="file-upload-input" accept=".json" class="visually-hidden">
+          <input type="file" id="file-upload-input" accept=".json,.xlsx" class="visually-hidden">
         </div>
       </div>
       <div id="active-experiment-banner" class="active-banner" hidden>
@@ -70,6 +70,12 @@
             <button type="button" class="segment" data-metric="luminescence" role="radio" aria-checked="false">Luminescence</button>
             <button type="button" class="segment" data-metric="ratio" role="radio" aria-checked="false">RLU/OD</button>
           </div>
+          <div id="metric-toggle-extra" class="segmented metric-toggle-extra" role="radiogroup" aria-label="Additional metrics" hidden></div>
+        </fieldset>
+
+        <fieldset class="control-card" id="channel-card" hidden>
+          <legend>Channels</legend>
+          <div id="channel-controls" class="channel-checks" aria-live="polite"></div>
         </fieldset>
 
         <fieldset class="control-card">
@@ -158,6 +164,7 @@
   <aside id="experiment-drawer" class="experiment-drawer" hidden></aside>
   <div id="drawer-backdrop" class="drawer-backdrop" hidden></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
   <script src="scripts/config.js"></script>
   <script type="module" src="scripts/app.js"></script>

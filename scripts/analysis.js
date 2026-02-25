@@ -24,7 +24,12 @@ function metricSeriesForWell(well, metric) {
     return ratio;
   }
 
-  return Array.isArray(well[metric]) ? well[metric] : [];
+  // Support any channel key (od600, luminescence, abs450, abs560, abs595, etc.)
+  if (Array.isArray(well[metric])) {
+    return well[metric];
+  }
+
+  return [];
 }
 
 function finiteValues(series) {
@@ -280,4 +285,64 @@ export function computeZStats(wells, metric, timeIndex) {
 
 export function metricValue(well, metric, timeIndex) {
   return metricSeriesForWell(well, metric)[timeIndex];
+}
+
+/**
+ * Compute features for an arbitrary channel (not just the hardcoded od600/lum).
+ * Returns an object with prefixed feature keys: {channelKey}_baseline_mean, etc.
+ */
+export function computeChannelFeatures(well, time, channelKey) {
+  const series = metricSeriesForWell(well, channelKey);
+  const first5 = firstNFinite(series, 5);
+  const first10 = finiteValuesWithIndex(series).slice(0, 10);
+  const baseline = mean(first5);
+
+  return {
+    [`${channelKey}_baseline_mean`]: baseline,
+    [`${channelKey}_early_slope`]: linearSlopeFromPoints(first10),
+    [`${channelKey}_time_to_1p2x`]: timeToThresholdIndex(series, 1.2, baseline),
+    [`${channelKey}_auc`]: trapezoidAuc(series, time)
+  };
+}
+
+/**
+ * Compute features for all selected channels in a multivariate analysis.
+ * Includes cross-channel ratios for each ABS channel vs luminescence.
+ */
+export function computeMultiChannelFeatures(well, time, channels) {
+  const base = {
+    well: well.well,
+    group: well.group
+  };
+
+  for (const ch of channels) {
+    if (ch === "ratio") continue; // skip virtual ratio
+    Object.assign(base, computeChannelFeatures(well, time, ch));
+  }
+
+  // Add cross-channel ratios if luminescence is present
+  if (channels.includes("luminescence")) {
+    const lumSeries = metricSeriesForWell(well, "luminescence");
+    for (const ch of channels) {
+      if (ch === "luminescence" || ch === "ratio") continue;
+      const absSeries = metricSeriesForWell(well, ch);
+      const len = Math.min(lumSeries.length, absSeries.length);
+      const crossRatio = new Array(len);
+      for (let i = 0; i < len; i++) {
+        const lv = isFiniteNumber(lumSeries[i]) ? lumSeries[i] : NaN;
+        const av = isFiniteNumber(absSeries[i]) ? absSeries[i] : NaN;
+        crossRatio[i] = isFiniteNumber(lv) && isFiniteNumber(av)
+          ? lv / Math.max(av, EPSILON)
+          : NaN;
+      }
+      const crFirst5 = firstNFinite(crossRatio, 5);
+      const crFirst10 = finiteValuesWithIndex(crossRatio).slice(0, 10);
+      const crBaseline = mean(crFirst5);
+      base[`lum_${ch}_ratio_slope`] = linearSlopeFromPoints(crFirst10);
+      base[`lum_${ch}_ratio_auc`] = trapezoidAuc(crossRatio, time);
+      base[`lum_${ch}_ratio_baseline`] = crBaseline;
+    }
+  }
+
+  return base;
 }

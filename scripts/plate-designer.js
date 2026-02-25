@@ -1,9 +1,24 @@
 const MEDIA_PRESETS = {
-  LB: { volumeUl: 200, notes: "Luria-Bertani broth" },
-  M9: { volumeUl: 200, notes: "M9 minimal medium" },
-  TSB: { volumeUl: 200, notes: "Tryptic Soy Broth" },
-  PBS: { volumeUl: 100, notes: "Phosphate-buffered saline" }
+  LB: { volumeUl: 200, unit: "uL", notes: "Luria-Bertani broth" },
+  M9: { volumeUl: 200, unit: "uL", notes: "M9 minimal medium" },
+  TSB: { volumeUl: 200, unit: "uL", notes: "Tryptic Soy Broth" },
+  PBS: { volumeUl: 100, unit: "uL", notes: "Phosphate-buffered saline" }
 };
+
+const UNIT_OPTIONS = [
+  { value: "uL", label: "µL" },
+  { value: "mL", label: "mL" },
+  { value: "mM", label: "mM" },
+  { value: "uM", label: "µM" },
+  { value: "nM", label: "nM" },
+  { value: "mg/mL", label: "mg/mL" },
+  { value: "ug/mL", label: "µg/mL" },
+  { value: "%v/v", label: "% v/v" },
+  { value: "%w/v", label: "% w/v" },
+  { value: "CFU/mL", label: "CFU/mL" },
+  { value: "PFU/mL", label: "PFU/mL" },
+  { value: "x", label: "x (fold)" }
+];
 
 const PLATE_LAYOUTS = {
   6: { rows: 2, cols: 3 },
@@ -65,7 +80,8 @@ function createGroup() {
     color,
     wells: new Set(),
     organism: { species: "", strain: "", cellCount: "" },
-    additives: []
+    additives: [],
+    expanded: false
   };
 }
 
@@ -247,18 +263,34 @@ function renderGroups() {
     });
     colorInput.addEventListener("change", updateExportPreview);
 
+    const expandBtn = document.createElement("button");
+    expandBtn.type = "button";
+    expandBtn.className = "designer-action group-expand-btn";
+    expandBtn.textContent = group.expanded ? "−" : "+";
+    expandBtn.title = group.expanded ? "Collapse" : "Expand";
+    expandBtn.addEventListener("click", () => {
+      group.expanded = !group.expanded;
+      renderGroups();
+    });
+
     const deleteGroupButton = document.createElement("button");
     deleteGroupButton.type = "button";
     deleteGroupButton.className = "designer-action danger";
     deleteGroupButton.textContent = "×";
     deleteGroupButton.addEventListener("click", () => removeGroup(group.id));
 
-    head.append(nameInput, colorInput, deleteGroupButton);
+    head.append(expandBtn, nameInput, colorInput, deleteGroupButton);
+
+    // Collapsible body section
+    const bodySection = document.createElement("div");
+    bodySection.className = "collapsible-section";
+    if (!group.expanded) {
+      bodySection.classList.add("is-collapsed");
+    }
 
     const organismFields = document.createElement("div");
     organismFields.className = "additive-fields";
-    organismFields.style.marginTop = "8px";
-    organismFields.innerHTML = "<strong>Organism (Optional)</strong>";
+    organismFields.innerHTML = "<strong>Organism</strong>";
 
     const speciesInput = document.createElement("input");
     speciesInput.type = "text";
@@ -281,30 +313,41 @@ function renderGroups() {
     organismFields.append(speciesInput, strainInput);
 
     const additivesContainer = document.createElement("div");
-    additivesContainer.style.marginTop = "12px";
-    additivesContainer.style.paddingTop = "12px";
-    additivesContainer.style.borderTop = "1px solid var(--border-color, #ccc)";
+    additivesContainer.style.marginTop = "4px";
+    additivesContainer.style.paddingTop = "4px";
+    additivesContainer.style.borderTop = "1px solid rgba(127, 187, 206, 0.15)";
 
     const additivesHead = document.createElement("div");
     additivesHead.style.display = "flex";
     additivesHead.style.justifyContent = "space-between";
-    additivesHead.innerHTML = "<strong>Additives</strong>";
+    additivesHead.style.alignItems = "center";
+    additivesHead.style.gap = "4px";
+
+    const additivesLabel = document.createElement("strong");
+    additivesLabel.textContent = "Additives";
+    additivesLabel.style.fontSize = "var(--fs-2xs)";
+    additivesLabel.style.color = "var(--slate-500)";
+    additivesLabel.style.textTransform = "uppercase";
+    additivesLabel.style.letterSpacing = "0.05em";
 
     const presetSelect = document.createElement("select");
-    presetSelect.innerHTML = "<option value=\"\">+ Add Component...</option><option value=\"custom\">Custom Additive</option>";
+    presetSelect.style.fontSize = "var(--fs-2xs)";
+    presetSelect.style.padding = "2px 6px";
+    presetSelect.innerHTML = "<option value=\"\">+ Add...</option><option value=\"custom\">Custom</option>";
     for (const key of Object.keys(MEDIA_PRESETS)) {
-      presetSelect.innerHTML += `<option value="${key}">${key} Media</option>`;
+      presetSelect.innerHTML += `<option value="${key}">${key}</option>`;
     }
 
     presetSelect.addEventListener("change", () => {
       if (!presetSelect.value) return;
       if (presetSelect.value === "custom") {
-        group.additives.push({ name: "", volumeUl: "", notes: "" });
+        group.additives.push({ name: "", amount: "", unit: "uL", notes: "" });
       } else {
         const preset = MEDIA_PRESETS[presetSelect.value];
         group.additives.push({
           name: presetSelect.value,
-          volumeUl: preset.volumeUl,
+          amount: preset.volumeUl,
+          unit: preset.unit || "uL",
           notes: preset.notes
         });
       }
@@ -312,42 +355,68 @@ function renderGroups() {
       renderGroups();
     });
 
-    additivesHead.append(presetSelect);
+    additivesHead.append(additivesLabel, presetSelect);
     additivesContainer.append(additivesHead);
 
     group.additives.forEach((additive, index) => {
+      // Migrate legacy data: volumeUl → amount
+      if (additive.volumeUl !== undefined && additive.amount === undefined) {
+        additive.amount = additive.volumeUl;
+        additive.unit = additive.unit || "uL";
+      }
+
       const additiveRow = document.createElement("div");
       additiveRow.style.display = "flex";
-      additiveRow.style.gap = "8px";
-      additiveRow.style.marginTop = "8px";
+      additiveRow.style.gap = "4px";
+      additiveRow.style.marginTop = "4px";
+      additiveRow.style.alignItems = "center";
 
       const additiveName = document.createElement("input");
       additiveName.placeholder = "Name";
       additiveName.value = additive.name;
+      additiveName.style.flex = "1 1 0";
+      additiveName.style.minWidth = "0";
       additiveName.addEventListener("input", () => {
         additive.name = additiveName.value;
         updateExportPreview();
       });
 
-      const additiveVolume = document.createElement("input");
-      additiveVolume.type = "number";
-      additiveVolume.placeholder = "uL";
-      additiveVolume.style.width = "70px";
-      additiveVolume.value = additive.volumeUl;
-      additiveVolume.addEventListener("input", () => {
-        additive.volumeUl = additiveVolume.value;
+      const additiveAmount = document.createElement("input");
+      additiveAmount.type = "number";
+      additiveAmount.placeholder = "Qty";
+      additiveAmount.style.width = "50px";
+      additiveAmount.value = additive.amount ?? "";
+      additiveAmount.addEventListener("input", () => {
+        additive.amount = additiveAmount.value;
+        updateExportPreview();
+      });
+
+      const unitSelect = document.createElement("select");
+      unitSelect.style.fontSize = "var(--fs-2xs)";
+      unitSelect.style.padding = "2px 4px";
+      unitSelect.style.width = "65px";
+      for (const opt of UNIT_OPTIONS) {
+        const option = document.createElement("option");
+        option.value = opt.value;
+        option.textContent = opt.label;
+        unitSelect.appendChild(option);
+      }
+      unitSelect.value = additive.unit || "uL";
+      unitSelect.addEventListener("change", () => {
+        additive.unit = unitSelect.value;
         updateExportPreview();
       });
 
       const removeAdditiveButton = document.createElement("button");
       removeAdditiveButton.textContent = "×";
       removeAdditiveButton.className = "designer-action danger";
+      removeAdditiveButton.style.padding = "2px 6px";
       removeAdditiveButton.addEventListener("click", () => {
         group.additives.splice(index, 1);
         renderGroups();
       });
 
-      additiveRow.append(additiveName, additiveVolume, removeAdditiveButton);
+      additiveRow.append(additiveName, additiveAmount, unitSelect, removeAdditiveButton);
       additivesContainer.append(additiveRow);
     });
 
@@ -355,17 +424,33 @@ function renderGroups() {
     footer.className = "additive-footer";
 
     const mapped = document.createElement("span");
-    mapped.textContent = `${group.wells.size} well(s) assigned`;
+    mapped.textContent = `${group.wells.size} well(s)`;
 
     const applyButton = document.createElement("button");
     applyButton.type = "button";
     applyButton.className = "designer-action";
-    applyButton.textContent = "Assign selected wells";
+    applyButton.textContent = "Assign selected";
     applyButton.disabled = !designerState.selectedWells.size;
     applyButton.addEventListener("click", () => applySelectionToGroup(group.id));
 
     footer.append(mapped, applyButton);
-    card.append(head, organismFields, additivesContainer, footer);
+
+    bodySection.append(organismFields, additivesContainer, footer);
+
+    // Build summary line for collapsed state
+    const summaryParts = [];
+    if (group.wells.size) summaryParts.push(`${group.wells.size} well(s)`);
+    if (group.organism.species) summaryParts.push(group.organism.species);
+    if (group.additives.length) summaryParts.push(`${group.additives.length} additive(s)`);
+    const summaryEl = document.createElement("span");
+    summaryEl.className = "group-summary";
+    summaryEl.textContent = summaryParts.join(" · ") || "empty";
+
+    if (group.expanded) {
+      card.append(head, bodySection);
+    } else {
+      card.append(head, summaryEl);
+    }
     fragment.appendChild(card);
   }
 
@@ -388,7 +473,8 @@ function buildPayload() {
       organism: group.organism?.species ? group.organism : null,
       additives: group.additives.map((additive) => ({
         name: additive.name,
-        volume_uL: additive.volumeUl ? Number(additive.volumeUl) : null,
+        amount: additive.amount ? Number(additive.amount) : (additive.volumeUl ? Number(additive.volumeUl) : null),
+        unit: additive.unit || "uL",
         notes: additive.notes || null
       })),
       wells: [...group.wells].sort()
@@ -454,7 +540,8 @@ function maybeHydrateFromSession() {
       nextGroup.additives = Array.isArray(group.additives)
         ? group.additives.map((additive) => ({
             name: String(additive?.name || ""),
-            volumeUl: additive?.volume_uL ?? additive?.volumeUl ?? "",
+            amount: additive?.amount ?? additive?.volume_uL ?? additive?.volumeUl ?? "",
+            unit: String(additive?.unit || "uL"),
             notes: String(additive?.notes || "")
           }))
         : [];

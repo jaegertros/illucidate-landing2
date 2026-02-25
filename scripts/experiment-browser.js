@@ -215,19 +215,20 @@ function openDrawer(containerEl, backdropEl) {
   });
 }
 
-function closeDrawer(containerEl, backdropEl) {
+function closeDrawer(containerEl) {
   if (!containerEl) {
     return;
   }
-  const effectiveBackdrop = backdropEl || document.getElementById("drawer-backdrop");
+  const backdropEl = document.getElementById("drawer-backdrop");
   containerEl.classList.remove("is-open");
-  if (effectiveBackdrop) {
-    effectiveBackdrop.classList.remove("is-visible");
+  if (backdropEl) {
+    backdropEl.classList.remove("is-visible");
   }
+
   const onEnd = () => {
     containerEl.hidden = true;
-    if (effectiveBackdrop) {
-      effectiveBackdrop.hidden = true;
+    if (backdropEl) {
+      backdropEl.hidden = true;
     }
     containerEl.removeEventListener("transitionend", onEnd);
   };
