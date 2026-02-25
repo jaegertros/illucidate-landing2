@@ -673,6 +673,8 @@ function bindFileUpload() {
     if (!file) {
       return;
     }
+  });
+}
 
     const isXlsx = file.name.toLowerCase().endsWith(".xlsx");
 
@@ -743,6 +745,26 @@ async function bootstrap() {
       console.warn("Experiment browser module not loaded:", browserError.message);
     }
 
+    try {
+      const { initBrowser } = await import("./experiment-browser.js");
+      initBrowser({
+        onLoad(dataset, title) {
+          initializeDashboard(dataset);
+          showActiveBanner(title);
+        },
+        containerEl: document.getElementById("experiment-drawer"),
+        backdropEl: document.getElementById("drawer-backdrop"),
+        triggerEl: document.getElementById("explore-data-btn")
+      });
+    } catch (browserError) {
+            console.warn("Experiment browser module not loaded:", browserError.message);
+      const exploreBtn = document.getElementById("explore-data-btn");
+      if (exploreBtn) {
+        exploreBtn.disabled = true;
+        exploreBtn.setAttribute("aria-disabled", "true");
+        exploreBtn.classList.add("is-disabled");
+        exploreBtn.title = "Explore Data is currently unavailable.";
+      }
     requestAnimationFrame(() => {
       document.body.classList.add("is-ready");
     });
