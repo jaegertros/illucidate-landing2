@@ -586,10 +586,23 @@ function bindEvents() {
   dom.sendToDashboard?.addEventListener("click", exportToIllucidate);
 }
 
-function bootstrapDesigner() {
+async function bootstrapDesigner() {
   if (!dom.interactivePlate) return;
 
-  maybeHydrateFromSession();
+  const hasSession = sessionStorage.getItem("illucidate_custom_plate");
+  if (hasSession) {
+    maybeHydrateFromSession();
+  } else {
+    try {
+      const resp = await fetch("data/default-plate-map.json");
+      if (resp.ok) {
+        const defaultMap = await resp.json();
+        sessionStorage.setItem("illucidate_custom_plate", JSON.stringify(defaultMap));
+        maybeHydrateFromSession();
+      }
+    } catch { /* silent fallback to empty designer */ }
+  }
+
   if (dom.plateSizeSelect) {
     dom.plateSizeSelect.value = String(designerState.plateSize);
   }

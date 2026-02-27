@@ -586,7 +586,11 @@ function initializeDashboard(dataset) {
   app.data = dataset;
   app.groups = dataset.meta?.groups || Array.from(new Set(dataset.wells.map((well) => well.group)));
   app.colorByGroup.clear();
-  app.groups.forEach((group, index) => app.colorByGroup.set(group, GROUP_COLOR_PALETTE[index % GROUP_COLOR_PALETTE.length]));
+  const customColors = dataset.meta?.groupColors;
+  app.groups.forEach((group, index) => {
+    const color = (customColors && customColors[group]) || GROUP_COLOR_PALETTE[index % GROUP_COLOR_PALETTE.length];
+    app.colorByGroup.set(group, color);
+  });
   app.state.visibleGroups = new Set(app.groups);
   app.state.targetGroup = app.groups.find((group) => group !== CONTROL_GROUP) || null;
   app.state.timeIndex = Math.min(6, Math.max(dataset.time.length - 1, 0));
@@ -651,12 +655,87 @@ function hideActiveBanner() {
   }
 }
 
+/* ── Default plate mapping ────────────────────────────────────────────── */
+
+const DEFAULT_GROUP_MAP = {
+  "PBS Blank": [
+    "A1","A2","A3","A4","A5","A6","A7","A8","A9","A10","A11","A12",
+    "H1","H2","H3","H4","H5","H6","H7","H8","H9","H10","H11","H12",
+    "B1","C1","D1","E1","F1","G1","B12","C12","D12","E12","F12","G12"
+  ],
+  "C7927 \u00b7 0 mM NaCl":   ["B2","B3","B4","B5","B6"],
+  "C7927 \u00b7 100 mM NaCl": ["B7","B8","B9","B10","B11"],
+  "C7927 \u00b7 200 mM NaCl": ["C2","C3","C4","C5","C6"],
+  "Curli Lux \u00b7 0 mM NaCl":   ["C7","C8","C9","C10","C11"],
+  "Curli Lux \u00b7 100 mM NaCl": ["D2","D3","D4","D5","D6"],
+  "Curli Lux \u00b7 200 mM NaCl": ["D7","D8","D9","D10","D11"],
+  "Biofilm Lux \u00b7 0 mM NaCl":   ["E2","E3","E4","E5","E6"],
+  "Biofilm Lux \u00b7 100 mM NaCl": ["E7","E8","E9","E10","E11"],
+  "Biofilm Lux \u00b7 200 mM NaCl": ["F2","F3","F4","F5","F6"]
+};
+
+const DEFAULT_GROUP_COLORS = {
+  "PBS Blank":                     "#94a3b8",
+  "C7927 \u00b7 0 mM NaCl":       "#4fc3b8",
+  "C7927 \u00b7 100 mM NaCl":     "#38a89d",
+  "C7927 \u00b7 200 mM NaCl":     "#278e84",
+  "Curli Lux \u00b7 0 mM NaCl":   "#6b8af2",
+  "Curli Lux \u00b7 100 mM NaCl": "#5070d4",
+  "Curli Lux \u00b7 200 mM NaCl": "#3a58b5",
+  "Biofilm Lux \u00b7 0 mM NaCl":   "#f3cf73",
+  "Biofilm Lux \u00b7 100 mM NaCl": "#e4b44a",
+  "Biofilm Lux \u00b7 200 mM NaCl": "#d49a2b",
+  "Unassigned":                    "#cbd5e1"
+};
+
+/** Null-out OD600 outlier spikes (values >3× the mean of their neighbours). */
+function cleanOd600Outliers(dataset) {
+  if (!dataset.wells) return;
+  for (const well of dataset.wells) {
+    const od = well.od600;
+    if (!od || od.length < 3) continue;
+    for (let i = 1; i < od.length - 1; i++) {
+      const prev = od[i - 1];
+      const next = od[i + 1];
+      if (prev == null || next == null) continue;
+      const neighbourMean = (prev + next) / 2;
+      if (neighbourMean > 0 && od[i] > neighbourMean * 3) {
+        od[i] = null;
+      }
+    }
+  }
+}
+
+/** Assign wells to experimental groups using the default plate map. */
+function applyDefaultGrouping(dataset) {
+  // Build well→group reverse lookup
+  const wellToGroup = new Map();
+  for (const [groupName, wells] of Object.entries(DEFAULT_GROUP_MAP)) {
+    for (const w of wells) {
+      wellToGroup.set(w, groupName);
+    }
+  }
+
+  for (const well of dataset.wells) {
+    well.group = wellToGroup.get(well.well) || "Unassigned";
+  }
+
+  dataset.meta.groups = [...Object.keys(DEFAULT_GROUP_MAP), "Unassigned"];
+  dataset.meta.groupColors = { ...DEFAULT_GROUP_COLORS };
+}
+
+/* ── Data loading ─────────────────────────────────────────────────────── */
+
 async function loadDemoDataset() {
-  const response = await fetch("data/demo-dataset.json");
+  const response = await fetch("examples/data/testestestest_20260222_234324_list.xlsx");
   if (!response.ok) {
     throw new Error(`Failed to load demo data (${response.status})`);
   }
-  return response.json();
+  const buffer = await response.arrayBuffer();
+  const dataset = parseVictorXlsx(buffer);
+  cleanOd600Outliers(dataset);
+  applyDefaultGrouping(dataset);
+  return dataset;
 }
 
 function bindFileUpload() {
@@ -673,8 +752,6 @@ function bindFileUpload() {
     if (!file) {
       return;
     }
-  });
-}
 
     const isXlsx = file.name.toLowerCase().endsWith(".xlsx");
 
@@ -743,21 +820,6 @@ async function bootstrap() {
       });
     } catch (browserError) {
       console.warn("Experiment browser module not loaded:", browserError.message);
-    }
-
-    try {
-      const { initBrowser } = await import("./experiment-browser.js");
-      initBrowser({
-        onLoad(dataset, title) {
-          initializeDashboard(dataset);
-          showActiveBanner(title);
-        },
-        containerEl: document.getElementById("experiment-drawer"),
-        backdropEl: document.getElementById("drawer-backdrop"),
-        triggerEl: document.getElementById("explore-data-btn")
-      });
-    } catch (browserError) {
-            console.warn("Experiment browser module not loaded:", browserError.message);
       const exploreBtn = document.getElementById("explore-data-btn");
       if (exploreBtn) {
         exploreBtn.disabled = true;
@@ -765,6 +827,8 @@ async function bootstrap() {
         exploreBtn.classList.add("is-disabled");
         exploreBtn.title = "Explore Data is currently unavailable.";
       }
+    }
+
     requestAnimationFrame(() => {
       document.body.classList.add("is-ready");
     });

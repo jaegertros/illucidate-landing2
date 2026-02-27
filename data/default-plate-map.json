@@ -1,0 +1,105 @@
+{
+  "plate_size": 96,
+  "groups": [
+    {
+      "name": "PBS Blank",
+      "color": "#94a3b8",
+      "organism": null,
+      "additives": [
+        { "name": "PBS", "amount": 200, "unit": "uL", "notes": null }
+      ],
+      "wells": [
+        "A1","A2","A3","A4","A5","A6","A7","A8","A9","A10","A11","A12",
+        "B1","B12","C1","C12","D1","D12","E1","E12","F1","F12","G1","G12",
+        "H1","H2","H3","H4","H5","H6","H7","H8","H9","H10","H11","H12"
+      ]
+    },
+    {
+      "name": "C7927 \u00b7 0 mM NaCl",
+      "color": "#4fc3b8",
+      "organism": { "species": "E. coli O157:H7", "strain": "C7927", "cellCount": "" },
+      "additives": [
+        { "name": "LB (no salt)", "amount": 200, "unit": "uL", "notes": "LB broth, no NaCl" }
+      ],
+      "wells": ["B2","B3","B4","B5","B6"]
+    },
+    {
+      "name": "C7927 \u00b7 100 mM NaCl",
+      "color": "#38a89d",
+      "organism": { "species": "E. coli O157:H7", "strain": "C7927", "cellCount": "" },
+      "additives": [
+        { "name": "LB (no salt)", "amount": 200, "unit": "uL", "notes": "LB broth, no NaCl" },
+        { "name": "5M NaCl", "amount": 40, "unit": "uL", "notes": "40 uL 5M NaCl per 2 mL \u2192 ~100 mM final" }
+      ],
+      "wells": ["B7","B8","B9","B10","B11"]
+    },
+    {
+      "name": "C7927 \u00b7 200 mM NaCl",
+      "color": "#278e84",
+      "organism": { "species": "E. coli O157:H7", "strain": "C7927", "cellCount": "" },
+      "additives": [
+        { "name": "LB (no salt)", "amount": 200, "unit": "uL", "notes": "LB broth, no NaCl" },
+        { "name": "5M NaCl", "amount": 80, "unit": "uL", "notes": "80 uL 5M NaCl per 2 mL \u2192 ~200 mM final" }
+      ],
+      "wells": ["C2","C3","C4","C5","C6"]
+    },
+    {
+      "name": "Curli Lux \u00b7 0 mM NaCl",
+      "color": "#6b8af2",
+      "organism": { "species": "E. coli O157:H7", "strain": "curli lux", "cellCount": "" },
+      "additives": [
+        { "name": "LB (no salt)", "amount": 200, "unit": "uL", "notes": "LB broth, no NaCl" }
+      ],
+      "wells": ["C7","C8","C9","C10","C11"]
+    },
+    {
+      "name": "Curli Lux \u00b7 100 mM NaCl",
+      "color": "#5070d4",
+      "organism": { "species": "E. coli O157:H7", "strain": "curli lux", "cellCount": "" },
+      "additives": [
+        { "name": "LB (no salt)", "amount": 200, "unit": "uL", "notes": "LB broth, no NaCl" },
+        { "name": "5M NaCl", "amount": 40, "unit": "uL", "notes": "40 uL 5M NaCl per 2 mL \u2192 ~100 mM final" }
+      ],
+      "wells": ["D2","D3","D4","D5","D6"]
+    },
+    {
+      "name": "Curli Lux \u00b7 200 mM NaCl",
+      "color": "#3a58b5",
+      "organism": { "species": "E. coli O157:H7", "strain": "curli lux", "cellCount": "" },
+      "additives": [
+        { "name": "LB (no salt)", "amount": 200, "unit": "uL", "notes": "LB broth, no NaCl" },
+        { "name": "5M NaCl", "amount": 80, "unit": "uL", "notes": "80 uL 5M NaCl per 2 mL \u2192 ~200 mM final" }
+      ],
+      "wells": ["D7","D8","D9","D10","D11"]
+    },
+    {
+      "name": "Biofilm Lux \u00b7 0 mM NaCl",
+      "color": "#f3cf73",
+      "organism": { "species": "E. coli O157:H7", "strain": "biofilm lux", "cellCount": "" },
+      "additives": [
+        { "name": "LB (no salt)", "amount": 200, "unit": "uL", "notes": "LB broth, no NaCl" }
+      ],
+      "wells": ["E2","E3","E4","E5","E6"]
+    },
+    {
+      "name": "Biofilm Lux \u00b7 100 mM NaCl",
+      "color": "#e4b44a",
+      "organism": { "species": "E. coli O157:H7", "strain": "biofilm lux", "cellCount": "" },
+      "additives": [
+        { "name": "LB (no salt)", "amount": 200, "unit": "uL", "notes": "LB broth, no NaCl" },
+        { "name": "5M NaCl", "amount": 40, "unit": "uL", "notes": "40 uL 5M NaCl per 2 mL \u2192 ~100 mM final" }
+      ],
+      "wells": ["E7","E8","E9","E10","E11"]
+    },
+    {
+      "name": "Biofilm Lux \u00b7 200 mM NaCl",
+      "color": "#d49a2b",
+      "organism": { "species": "E. coli O157:H7", "strain": "biofilm lux", "cellCount": "" },
+      "additives": [
+        { "name": "LB (no salt)", "amount": 200, "unit": "uL", "notes": "LB broth, no NaCl" },
+        { "name": "5M NaCl", "amount": 80, "unit": "uL", "notes": "80 uL 5M NaCl per 2 mL \u2192 ~200 mM final" }
+      ],
+      "wells": ["F2","F3","F4","F5","F6"]
+    }
+  ]
+}
