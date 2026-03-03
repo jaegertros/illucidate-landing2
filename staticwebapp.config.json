@@ -41,6 +41,15 @@
       "rewrite": "/cite.html"
     },
     {
+      "route": "/multivariate",
+      "rewrite": "/multivariate.html"
+    },
+    {
+      "route": "/research",
+      "redirect": "/multivariate",
+      "statusCode": 301
+    },
+    {
       "route": "/designer.html",
       "redirect": "/designer",
       "statusCode": 301
@@ -63,6 +72,11 @@
     {
       "route": "/cite.html",
       "redirect": "/cite",
+      "statusCode": 301
+    },
+    {
+      "route": "/multivariate.html",
+      "redirect": "/multivariate",
       "statusCode": 301
     }
   ]
