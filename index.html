@@ -1,172 +1,237 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Illucidate | Early Signal Discovery Dashboard</title>
+  <title>Illucidate</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles/site.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0a0b0d;--bge:#12131a;--brd:#1e2030;--ba:#2a3050;--tp:#c8cad4;--ts:#6b7094;--tm:#3d4260;--ac:#7b8ccc;--ad:#4a5580;--dng:#7a3a3a;--sf:'Cormorant Garamond','Georgia',serif;--mn:'DM Mono','Consolas',monospace}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{font-size:16px;scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+    body{font-family:var(--mn);font-weight:300;background:var(--bg);color:var(--tp);min-height:100vh;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9999}
+    .tr{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--ba) 20%,var(--ad) 50%,var(--ba) 80%,transparent)}
+    nav.sn{max-width:1200px;margin:0 auto;padding:1.5rem 2rem;display:flex;justify-content:space-between;align-items:center}
+    .nb img{height:28px;vertical-align:middle}
+    .nr{display:flex;align-items:center;gap:2.5rem}
+    .nl{display:flex;gap:2rem;list-style:none}
+    .nl a{font-family:var(--mn);font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--tm);text-decoration:none;transition:color .3s;cursor:pointer}
+    .nl a:hover{color:var(--ac)}
+    .lt{display:flex;border:1px solid var(--brd)}
+    .lb{font-family:var(--mn);font-size:.55rem;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--tm);background:transparent;border:none;padding:.4rem .7rem;cursor:pointer;transition:all .25s;border-right:1px solid var(--brd)}
+    .lb:last-child{border-right:none}
+    .lb.active{color:var(--tp);background:var(--bge)}
+    .lb:hover:not(.active){color:var(--ac)}
+    .hero{max-width:1200px;margin:0 auto;padding:6rem 2rem 5rem;position:relative}
+    .hero::before{content:'';position:absolute;top:3rem;left:2rem;width:1px;height:calc(100% - 5rem);background:linear-gradient(180deg,var(--ba),transparent)}
+    .hb{position:absolute;top:3rem;right:2rem;width:320px;height:440px;background:var(--bge);border:1px solid var(--brd);overflow:hidden;opacity:.4}
+    .hb img{width:100%;height:100%;object-fit:cover;filter:grayscale(.5) brightness(.7) contrast(1.15)}
+    .hl{font-family:var(--mn);font-size:.6rem;letter-spacing:.4em;text-transform:uppercase;color:var(--tm);padding-left:2rem;margin-bottom:2rem}
+    h1{font-family:var(--sf);font-weight:400;font-size:clamp(2.2rem,4.5vw,3.8rem);line-height:1.15;color:var(--tp);padding-left:2rem;max-width:660px;letter-spacing:-.01em}
+    h1 em{font-style:italic;color:var(--ac)}
+    .hs{font-family:var(--mn);font-weight:300;font-size:.78rem;line-height:1.85;color:var(--ts);padding-left:2rem;margin-top:2.5rem;max-width:540px}
+    .hloc{font-family:var(--mn);font-size:.6rem;letter-spacing:.2em;color:var(--tm);padding-left:2rem;margin-top:3rem}
+    .hm{font-family:var(--sf);font-style:italic;font-size:1.15rem;color:var(--ac);padding-left:2rem;margin-top:1.8rem;letter-spacing:.02em;opacity:.7}
+    .sd{max-width:1200px;margin:0 auto;padding:0 2rem}.sd hr{border:none;height:1px;background:var(--brd)}
+    .caps{max-width:1200px;margin:0 auto;padding:5rem 2rem}
+    .capl{font-family:var(--mn);font-size:.6rem;letter-spacing:.4em;text-transform:uppercase;color:var(--tm);margin-bottom:3rem}
+    .cg{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--brd);border:1px solid var(--brd)}
+    .cc{background:var(--bg);padding:2.5rem 2rem;transition:background .4s}
+    .cc:hover{background:var(--bge)}
+    .cn{font-family:var(--mn);font-size:.6rem;color:var(--tm);letter-spacing:.15em;margin-bottom:1.2rem}
+    .ct{font-family:var(--sf);font-size:1.25rem;font-weight:600;color:var(--tp);margin-bottom:.8rem}
+    .cdesc{font-family:var(--mn);font-size:.68rem;font-weight:300;line-height:1.8;color:var(--ts)}
+    .juris{max-width:1200px;margin:0 auto;padding:5rem 2rem}
+    .jr{display:flex;justify-content:space-between;align-items:baseline;padding:1.2rem 0;border-bottom:1px solid var(--brd)}.jr:first-of-type{border-top:1px solid var(--brd)}
+    .jn{font-family:var(--sf);font-size:1.1rem;color:var(--tp)}
+    .js{font-family:var(--mn);font-size:.63rem;color:var(--tm);letter-spacing:.1em;text-align:right}
+    .ss{max-width:1200px;margin:0 auto;padding:5rem 2rem}
+    .sb{border:1px solid var(--brd);background:var(--bge);padding:2rem 2.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1.5rem}
+    .si{display:flex;align-items:center;gap:.6rem}
+    .dot{width:6px;height:6px;border-radius:50%;background:#4a7a5a;box-shadow:0 0 8px rgba(74,122,90,.4);animation:pulse 3s ease-in-out infinite}
+    .dot.am{background:#8a7a3a;box-shadow:0 0 8px rgba(138,122,58,.4)}
+    .dot.rd{background:#7a3a3a;box-shadow:0 0 8px rgba(140,58,58,.4)}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .stxt{font-family:var(--mn);font-size:.63rem;color:var(--ts);letter-spacing:.05em}
+    .rs{max-width:1200px;margin:0 auto;padding:3rem 2rem 5rem}
+    .rc{border:1px solid var(--brd);padding:2rem 2.5rem;display:flex;justify-content:space-between;align-items:center;transition:border-color .3s}.rc:hover{border-color:var(--ad)}
+    .ri{display:flex;flex-direction:column;gap:.4rem}
+    .rlbl{font-family:var(--mn);font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--tm)}
+    .rtit{font-family:var(--sf);font-size:1.1rem;color:var(--tp)}
+    .rlink{font-family:var(--mn);font-size:.63rem;color:var(--ac);text-decoration:none;letter-spacing:.1em;border:1px solid var(--ad);padding:.5rem 1.2rem;transition:all .3s;white-space:nowrap}.rlink:hover{background:var(--ad);color:var(--tp)}
+    footer{border-top:1px solid var(--brd);max-width:1200px;margin:0 auto;padding:2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+    .fl{font-family:var(--mn);font-size:.58rem;color:var(--tm);letter-spacing:.1em}
+    .fa{font-family:var(--mn);font-size:.55rem;color:var(--tm);letter-spacing:.05em;line-height:1.8;text-align:center}
+    .fct{display:flex;gap:2rem}
+    .fct a{font-family:var(--mn);font-size:.58rem;color:var(--tm);text-decoration:none;letter-spacing:.1em;transition:color .3s;cursor:pointer}.fct a:hover{color:var(--ac)}
+    .mbk{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(4px);z-index:10000;display:none;align-items:center;justify-content:center}.mbk.open{display:flex}
+    .modal{background:var(--bg);border:1px solid var(--ba);width:380px;max-width:90vw;animation:mani .25s ease}
+    @keyframes mani{from{opacity:0;transform:scale(.97) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+    .mhd{padding:1.5rem 2rem 1rem;border-bottom:1px solid var(--brd);display:flex;justify-content:space-between;align-items:center}
+    .mhd-l{display:flex;align-items:center;gap:.8rem}
+    .mlk{width:14px;height:14px;border:1.5px solid var(--ac);border-radius:50%;position:relative}
+    .mlk::after{content:'';position:absolute;top:-6px;left:2.5px;width:7px;height:7px;border:1.5px solid var(--ac);border-bottom:none;border-radius:5px 5px 0 0}
+    .mtit{font-family:var(--mn);font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--ts)}
+    .mcls{background:none;border:none;color:var(--tm);font-size:1.2rem;cursor:pointer;padding:0;line-height:1;transition:color .2s}.mcls:hover{color:var(--tp)}
+    .mbdy{padding:1.8rem 2rem 2rem}
+    .mfld{margin-bottom:1.4rem}
+    .mfld label{display:block;font-family:var(--mn);font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--tm);margin-bottom:.5rem}
+    .mfld input{width:100%;background:var(--bge);border:1px solid var(--brd);color:var(--tp);font-family:var(--mn);font-size:.75rem;font-weight:400;letter-spacing:.15em;padding:.7rem 1rem;outline:none;transition:border-color .25s}
+    .mfld input::placeholder{color:var(--tm);font-weight:300;letter-spacing:.1em}
+    .mfld input:focus{border-color:var(--ad)}
+    .msub{width:100%;background:transparent;border:1px solid var(--ad);color:var(--ac);font-family:var(--mn);font-size:.63rem;font-weight:500;letter-spacing:.2em;text-transform:uppercase;padding:.75rem;cursor:pointer;transition:all .25s;margin-top:.5rem}.msub:hover{background:var(--ad);color:var(--tp)}
+    .mft{font-family:var(--mn);font-size:.52rem;color:var(--tm);text-align:center;margin-top:1.4rem;letter-spacing:.05em;line-height:1.7}
+    .mtls{display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--brd)}
+    .mtls-d{width:5px;height:5px;border-radius:50%;background:#4a7a5a;box-shadow:0 0 6px rgba(74,122,90,.4);animation:pulse 3s ease-in-out infinite}
+    .mtls-t{font-family:var(--mn);font-size:.5rem;color:var(--tm);letter-spacing:.15em;text-transform:uppercase}
+    .rv{opacity:0;transform:translateY(12px);animation:fu .6s ease forwards}
+    .d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.35s}.d4{animation-delay:.5s}.d5{animation-delay:.65s}
+    @keyframes fu{to{opacity:1;transform:translateY(0)}}
+    @media(max-width:900px){.cg{grid-template-columns:1fr}.sb{flex-direction:column;align-items:flex-start}.rc{flex-direction:column;gap:1.5rem;align-items:flex-start}.hero{padding:4rem 1.5rem 3rem}.hb{display:none}.nl{gap:1rem}.nr{gap:1.5rem}.jr{flex-direction:column;gap:.3rem}.js{text-align:left}}
+  </style>
 </head>
 <body>
-  <div class="background-noise" aria-hidden="true"></div>
-  <main class="page-shell">
-    <nav class="top-command-bar reveal" aria-label="Site navigation">
-      <div class="page-links">
-        <span class="nav-group-label">Pages</span>
-        <a href="/" class="ui-chip is-active" aria-current="page">Dashboard</a>
-        <a href="/designer" class="ui-chip">Plate Designer</a>
-        <a href="/rationale" class="ui-chip">Rationale</a>
-        <a href="/bio" class="ui-chip">Bio</a>
-        <a href="/roadmap" class="ui-chip">Roadmap</a>
-        <a href="/cite" class="ui-chip">Cite</a>
+  <div class="tr"></div>
+  <nav class="sn rv">
+    <div class="nb"><img src="assets/illucidate_logo_nav.svg" alt="Illucidate"></div>
+    <div class="nr">
+      <ul class="nl">
+        <li><a href="#capabilities" data-nav="services"></a></li>
+        <li><a href="#jurisdictions" data-nav="scope"></a></li>
+        <li><a href="#research" data-nav="research"></a></li>
+        <li><a href="#" id="ctrig" data-nav="contact"></a></li>
+      </ul>
+      <div class="lt">
+        <button class="lb active" data-lang="de">DE</button>
+        <button class="lb" data-lang="en">EN</button>
+        <button class="lb" data-lang="fr">FR</button>
       </div>
-      <div class="utility-links">
-        <span class="nav-group-label">Tools</span>
-        <a href="https://github.com/jaegertros/illucidate" class="ui-chip is-small" target="_blank" rel="noopener noreferrer">GitHub</a>
-        <a href="https://colab.research.google.com/github/jaegertros/illucidate-landing/blob/main/illucidate/notebooks/01_quickstart_colab.ipynb" class="ui-chip is-small" target="_blank" rel="noopener noreferrer">Colab</a>
-        <a href="https://buymeacoffee.com/cwaddell13" class="ui-chip is-small" target="_blank" rel="noopener noreferrer">Sponsor</a>
-      </div>
-    </nav>
+    </div>
+  </nav>
 
-    <header class="hero reveal">
-      <p class="page-crumb" aria-label="Breadcrumb">Home / Dashboard</p>
-      <div class="hero-brand">
-        <img src="assets/illucidate_logo2.svg" alt="Illucidate logo" class="hero-logo">
-        <div>
-          <p class="kicker">Research Preview</p>
-          <h1>Illucidate</h1>
-          <p class="tagline">Illuminating early signals in bacterial detection.</p>
+  <header class="hero">
+    <div class="hb"><img src="assets/07_45_42AM.png" alt=""></div>
+    <p class="hl rv d1" data-i="heroLabel"></p>
+    <h1 class="rv d2" data-i="heroTitle"></h1>
+    <p class="hs rv d3" data-i="heroSub"></p>
+    <p class="hloc rv d3">Frankfurt am Main &middot; Z&uuml;rich &middot; Washington, D.C.</p>
+    <p class="hm rv d4" data-i="motto"></p>
+  </header>
+
+  <div class="sd"><hr></div>
+
+  <section class="caps rv d4" id="capabilities">
+    <p class="capl" data-i="capLabel"></p>
+    <div class="cg">
+      <div class="cc"><p class="cn">01</p><h3 class="ct" data-i="c1t"></h3><p class="cdesc" data-i="c1d"></p></div>
+      <div class="cc"><p class="cn">02</p><h3 class="ct" data-i="c2t"></h3><p class="cdesc" data-i="c2d"></p></div>
+      <div class="cc"><p class="cn">03</p><h3 class="ct" data-i="c3t"></h3><p class="cdesc" data-i="c3d"></p></div>
+      <div class="cc"><p class="cn">04</p><h3 class="ct" data-i="c4t"></h3><p class="cdesc" data-i="c4d"></p></div>
+      <div class="cc"><p class="cn">05</p><h3 class="ct" data-i="c5t"></h3><p class="cdesc" data-i="c5d"></p></div>
+      <div class="cc"><p class="cn">06</p><h3 class="ct" data-i="c6t"></h3><p class="cdesc" data-i="c6d"></p></div>
+    </div>
+  </section>
+
+  <div class="sd"><hr></div>
+
+  <section class="juris rv d5" id="jurisdictions">
+    <p class="capl" data-i="jurisLabel"></p>
+    <div class="jr"><span class="jn" data-i="j1n"></span><span class="js">FERPA &middot; Title IX &middot; Office for Civil Rights</span></div>
+    <div class="jr"><span class="jn" data-i="j2n"></span><span class="js">Office of Inspector General &middot; ARS</span></div>
+    <div class="jr"><span class="jn" data-i="j3n"></span><span class="js">Whistleblower-Schutz &middot; 11(c)</span></div>
+    <div class="jr"><span class="jn" data-i="j4n"></span><span class="js">EU-Richtlinie 2019/1937 &middot; HinSchG</span></div>
+  </section>
+
+  <section class="ss">
+    <div class="sb">
+      <div class="si"><div class="dot"></div><span class="stxt" data-i="s1"></span></div>
+      <div class="si"><div class="dot"></div><span class="stxt" data-i="s2"></span></div>
+      <div class="si"><div class="dot am"></div><span class="stxt" data-i="s3"></span></div>
+      <div class="si"><div class="dot rd"></div><span class="stxt" data-i="s4"></span></div>
+    </div>
+  </section>
+
+  <div class="sd"><hr></div>
+
+  <section class="rs" id="research">
+    <div class="rc">
+      <div class="ri">
+        <span class="rlbl" data-i="resLabel"></span>
+        <span class="rtit" data-i="resTitle"></span>
+      </div>
+      <a href="/research" class="rlink" data-i="resLink"></a>
+    </div>
+  </section>
+
+  <footer>
+    <span class="fl" data-i="footerCopy"></span>
+    <div class="fa">Kaiserstra&szlig;e 29, 60311 Frankfurt am Main &middot; Bahnhofstrasse 42, 8001 Z&uuml;rich</div>
+    <div class="fct">
+      <a href="#" class="cftr">legal@illucidate.org</a>
+      <a href="#" class="cftr">einhaltung@illucidate.org</a>
+    </div>
+  </footer>
+
+  <div class="mbk" id="amod">
+    <div class="modal">
+      <div class="mhd">
+        <div class="mhd-l"><div class="mlk"></div><span class="mtit" data-i="modTitle"></span></div>
+        <button class="mcls" id="mcls">&times;</button>
+      </div>
+      <div class="mbdy">
+        <div class="mfld">
+          <label data-i="modAgent"></label>
+          <input type="text" id="ainp" placeholder="EH-XXXXXX" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="mfld">
+          <label data-i="modClient"></label>
+          <input type="text" id="cinp" placeholder="ILC-XXXX-XXXX" autocomplete="off" spellcheck="false">
+        </div>
+        <button class="msub" id="asub" data-i="modSubmit"></button>
+        <p class="mft" data-i="modFooter"></p>
+        <div class="mtls">
+          <div class="mtls-d"></div>
+          <span class="mtls-t">TLS 1.3 &middot; AES-256-GCM &middot; Einhaltung Relay</span>
         </div>
       </div>
-      <p class="hero-copy">
-        Live analysis of reporter phage kinetics data from the Purdue detection platform &mdash;
-        multichannel kinetics, early divergence scoring, and plate-level temporal signal mapping.
-      </p>
-    </header>
+    </div>
+  </div>
 
-    <section class="control-section reveal" aria-labelledby="controls-title">
-      <div class="section-head">
-        <h2 id="controls-title">Interactive Controls</h2>
-        <div class="data-source-actions">
-          <button type="button" id="load-file-btn" class="data-source-btn">Load File</button>
-          <button type="button" id="explore-data-btn" class="data-source-btn">Explore Data</button>
-          <input type="file" id="file-upload-input" accept=".json,.xlsx" class="visually-hidden">
-        </div>
-      </div>
-      <div id="active-experiment-banner" class="active-banner" hidden>
-        <span>Viewing: <strong class="active-banner-name"></strong></span>
-        <button type="button" id="reset-demo-btn" class="data-source-btn">Reset to Demo</button>
-      </div>
-      <div class="section-subhead">
-        <p class="helper-text">Control group is fixed to <strong>Control</strong>; choose a target group for ranking.</p>
-      </div>
-      <form id="dashboard-controls" class="controls-grid" aria-label="Dashboard controls">
-        <fieldset class="control-card">
-          <legend>Metric</legend>
-          <div class="segmented" id="metric-toggle" role="radiogroup" aria-label="Measurement metric">
-            <button type="button" class="segment is-active" data-metric="od600" role="radio" aria-checked="true">OD600</button>
-            <button type="button" class="segment" data-metric="luminescence" role="radio" aria-checked="false">Luminescence</button>
-            <button type="button" class="segment" data-metric="ratio" role="radio" aria-checked="false">RLU/OD</button>
-          </div>
-          <div id="metric-toggle-extra" class="segmented metric-toggle-extra" role="radiogroup" aria-label="Additional metrics" hidden></div>
-        </fieldset>
-
-        <fieldset class="control-card" id="channel-card" hidden>
-          <legend>Channels</legend>
-          <div id="channel-controls" class="channel-checks" aria-live="polite"></div>
-        </fieldset>
-
-        <fieldset class="control-card">
-          <legend>Visible Groups</legend>
-          <div id="group-controls" class="group-checks" aria-live="polite"></div>
-        </fieldset>
-
-        <fieldset class="control-card">
-          <legend>Target Group</legend>
-          <label for="target-group" class="visually-hidden">Target group for effect size comparison</label>
-          <select id="target-group"></select>
-        </fieldset>
-
-        <fieldset class="control-card">
-          <legend>Heatmap Time</legend>
-          <label for="time-slider" id="time-label">Timepoint</label>
-          <input id="time-slider" type="range" min="0" max="0" value="0" step="1" aria-describedby="time-value">
-          <p class="time-readout"><span id="time-value">0.00 h</span></p>
-        </fieldset>
-      </form>
-    </section>
-
-    <section class="dashboard reveal" aria-label="Illucidate dashboard">
-      <article class="panel panel-series">
-        <div class="panel-head">
-          <h3>Temporal Signal Overlays</h3>
-          <p>Per-well trajectories with group means for selected metric.</p>
-        </div>
-        <div id="series-chart" class="panel-body chart-host" role="img" aria-label="Time-series signal chart"></div>
-      </article>
-
-      <article class="panel panel-features">
-        <div class="panel-head">
-          <h3>Early Feature Ranking</h3>
-          <p>Top discriminatory features by absolute Cohen's d.</p>
-        </div>
-        <div id="feature-chart" class="panel-body chart-host" role="img" aria-label="Feature ranking bar chart"></div>
-      </article>
-
-      <article class="panel panel-plate">
-        <div class="panel-head">
-          <h3>96-Well Detection Heatmap</h3>
-          <p>Z-score normalized plate snapshot for selected metric and time.</p>
-        </div>
-        <div id="heatmap-chart" class="panel-body chart-host" role="img" aria-label="96-well heatmap"></div>
-      </article>
-    </section>
-
-    <section class="method-section reveal" aria-labelledby="method-title">
-      <h2 id="method-title">Method Snapshot</h2>
-      <p>
-        Features include baseline mean, early slope, time-to-threshold, early RLU/OD behavior, and AUC.
-        Ranking compares each target group to Control using effect size, while the plate map displays clamped z-score activity.
-      </p>
-    </section>
-
-    <section class="contact-section reveal" aria-labelledby="contact-title">
-      <h2 id="contact-title">System in Active Development</h2>
-      <p>
-        Interested in collaboration, datasets, or beta testing across plate-reader formats?
-      </p>
-      <form id="supabase-lead-form" class="lead-form" novalidate>
-        <label>
-          Name
-          <input type="text" name="name" autocomplete="name" required>
-        </label>
-        <label>
-          Email
-          <input type="email" name="email" autocomplete="email" required>
-        </label>
-        <label>
-          Organization
-          <input type="text" name="organization" autocomplete="organization">
-        </label>
-        <label>
-          Message
-          <textarea name="message" rows="4" required></textarea>
-        </label>
-        <button type="submit" class="contact-link">Send to Illucidate</button>
-        <p id="lead-form-status" role="status" aria-live="polite" class="helper-text"></p>
-      </form>
-      <a href="mailto:legal@illucidate.org" class="contact-link">legal@illucidate.org</a>
-    </section>
-  </main>
-
-  <aside id="experiment-drawer" class="experiment-drawer" hidden></aside>
-  <div id="drawer-backdrop" class="drawer-backdrop" hidden></div>
-
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
-  <script src="scripts/config.js"></script>
-  <script type="module" src="scripts/app.js"></script>
+  <script>
+    const L={
+      de:{heroLabel:"Institutionelle Einhaltung & Dokumentenintegrit\u00e4t",heroTitle:'Dokumentensicherung,<br>regulatorische \u00dcberwachung und<br><em>institutionelle Rechenschaftspflicht.</em>',heroSub:"Infrastruktur f\u00fcr Beweissicherung, regulatorische Compliance-\u00dcberwachung und beh\u00f6rden\u00fcbergreifendes Dokumentenmanagement bei Verfahren gegen \u00f6ffentliche Institutionen.",capLabel:"Kernkompetenzen",c1t:"Dokumentensicherung",c1d:"Kryptografische Verifizierung und l\u00fcckenlose Beweiskettendokumentation f\u00fcr digitale Beweismittel. SHA-256-Authentifizierung. Manipulationssichere Archivierungssysteme.",c2t:"Regulatorische \u00dcberwachung",c2d:"Beh\u00f6rden\u00fcbergreifendes Monitoring \u00fcber f\u00f6derale und einzelstaatliche Regulierungsbeh\u00f6rden. Fristenverwaltung f\u00fcr FERPA, Title IX, FOIA und staatliche Akteneinsichtsgesetze.",c3t:"Einhaltung-Infrastruktur",c3d:"Sichere Kommunikationswege, Audit-Trail-Verwaltung und Dokumentation institutioneller Antworten bei laufenden Compliance-Verfahren.",c4t:"F\u00f6rdermittelintegrit\u00e4tsanalyse",c4d:"Nachverfolgung f\u00f6deraler F\u00f6rdermittelausgaben, Pr\u00fcfung von Aufwandszertifizierungen und Ergebnisverifizierung bei \u00f6ffentlich finanzierten Forschungsprogrammen.",c5t:"Institutionelle Musteranalyse",c5d:"Abgleich institutioneller Reaktionen \u00fcber Verwaltungseinheiten hinweg. Identifikation von Widerspr\u00fcchen, Verfahrensfehlern und systematischer Nichtkonformit\u00e4t.",c6t:"Signalerkennungsforschung",c6d:"Angewandte Forschung zur Fr\u00fcherkennung. Multivariate Analyseplattformen f\u00fcr komplexe Systeme mit niedrigem Signal-Rausch-Verh\u00e4ltnis.",jurisLabel:"Regulatorischer Geltungsbereich",j1n:"U.S. Bildungsministerium",j2n:"U.S. Landwirtschaftsministerium",j3n:"Arbeitsschutzbeh\u00f6rde (OSHA)",j4n:"EU-Hinweisgeberschutzrichtlinie",motto:"Wir sehen alles.",s1:"Einhaltung \u2014 sicherer Relay aktiv",s2:"Dokumentenarchiv \u2014 verifiziert",s3:"Compliance-Antworten \u2014 ausstehend",s4:"FERPA-Anfrage \u2014 \u00fcberf\u00e4llig",resLabel:"Abteilung Angewandte Forschung",resTitle:"Fr\u00fcherkennungsplattform \u2014 Bakterielle Detektionskinetik",resLink:"Zur Plattform \u2192",footerCopy:"\u00a9 2026 Illucidate GmbH. Alle Dokumente gesichert.",navServices:"Leistungen",navScope:"Geltungsbereich",navResearch:"Forschung",navContact:"Kontakt",modTitle:"Sicherer Zugang",modAgent:"Agentennummer",modClient:"Mandanten-ID",modSubmit:"Authentifizieren",modFooter:"Zugang nur f\u00fcr autorisierte Agenten und Mandanten. Alle Anmeldeversuche werden protokolliert."},
+      en:{heroLabel:"Institutional Compliance & Records Integrity",heroTitle:'Document preservation,<br>regulatory monitoring, and<br><em>institutional accountability.</em>',heroSub:"Infrastructure for evidence preservation, regulatory compliance tracking, and cross-jurisdictional records management in matters involving public institutions.",capLabel:"Core Capabilities",c1t:"Records Preservation",c1d:"Cryptographic verification and chain-of-custody documentation for digital evidence. SHA-256 hash authentication. Tamper-evident archival systems.",c2t:"Regulatory Monitoring",c2d:"Multi-agency tracking across federal and state regulatory bodies. Deadline management for FERPA, Title IX, FOIA, and state public records statutes.",c3t:"Compliance Infrastructure",c3d:"Secure communications routing, audit trail maintenance, and institutional response documentation for active compliance matters.",c4t:"Grant Integrity Analysis",c4d:"Federal award expenditure tracking, effort certification review, and deliverable verification for federally funded research programs.",c5t:"Institutional Pattern Analysis",c5d:"Cross-referencing institutional responses across administrative units. Identification of contradictions, procedural failures, and systematic noncompliance.",c6t:"Signal Detection Research",c6d:"Applied research in early signal discovery. Multivariate analysis platforms for complex systems with low signal-to-noise environments.",jurisLabel:"Regulatory Scope",j1n:"U.S. Department of Education",j2n:"U.S. Department of Agriculture",j3n:"Occupational Safety & Health Administration",j4n:"EU Whistleblower Protection Directive",motto:"We see everything.",s1:"Einhaltung secure relay \u2014 active",s2:"Records archive \u2014 verified",s3:"Compliance responses \u2014 pending",s4:"FERPA request \u2014 overdue",resLabel:"Applied Research Division",resTitle:"Early Signal Discovery Platform \u2014 Bacterial Detection Kinetics",resLink:"View Platform \u2192",footerCopy:"\u00a9 2026 Illucidate GmbH. All records preserved.",navServices:"Services",navScope:"Scope",navResearch:"Research",navContact:"Contact",modTitle:"Secure Access",modAgent:"Agent Number",modClient:"Client ID",modSubmit:"Authenticate",modFooter:"Access restricted to authorized agents and clients. All authentication attempts are logged."},
+      fr:{heroLabel:"Conformit\u00e9 Institutionnelle & Int\u00e9grit\u00e9 Documentaire",heroTitle:'Conservation des documents,<br>surveillance r\u00e9glementaire et<br><em>responsabilit\u00e9 institutionnelle.</em>',heroSub:"Infrastructure pour la conservation des preuves, le suivi de la conformit\u00e9 r\u00e9glementaire et la gestion des documents dans les affaires impliquant des institutions publiques.",capLabel:"Comp\u00e9tences Fondamentales",c1t:"Conservation des Documents",c1d:"V\u00e9rification cryptographique et documentation de la cha\u00eene de tra\u00e7abilit\u00e9 pour les preuves num\u00e9riques. Authentification SHA-256. Syst\u00e8mes d\u2019archivage inviolables.",c2t:"Surveillance R\u00e9glementaire",c2d:"Suivi multi-agences aupr\u00e8s des organismes de r\u00e9glementation f\u00e9d\u00e9raux et \u00e9tatiques. Gestion des d\u00e9lais FERPA, Title IX, FOIA et lois \u00e9tatiques.",c3t:"Infrastructure de Conformit\u00e9",c3d:"Acheminement s\u00e9curis\u00e9 des communications, maintenance des pistes d\u2019audit et documentation des r\u00e9ponses institutionnelles.",c4t:"Analyse de l\u2019Int\u00e9grit\u00e9 des Subventions",c4d:"Suivi des d\u00e9penses des subventions f\u00e9d\u00e9rales, examen des certifications d\u2019effort et v\u00e9rification des livrables.",c5t:"Analyse des Sch\u00e9mas Institutionnels",c5d:"Recoupement des r\u00e9ponses institutionnelles entre unit\u00e9s administratives. Identification des contradictions et de la non-conformit\u00e9 syst\u00e9matique.",c6t:"Recherche en D\u00e9tection de Signaux",c6d:"Recherche appliqu\u00e9e en d\u00e9tection pr\u00e9coce. Plateformes d\u2019analyse multivari\u00e9e pour les syst\u00e8mes complexes \u00e0 faible rapport signal-bruit.",jurisLabel:"Champ R\u00e9glementaire",j1n:"Minist\u00e8re de l\u2019\u00c9ducation des \u00c9.-U.",j2n:"Minist\u00e8re de l\u2019Agriculture des \u00c9.-U.",j3n:"Administration de la S\u00e9curit\u00e9 et Sant\u00e9 au Travail",j4n:"Directive Europ\u00e9enne sur les Lanceurs d\u2019Alerte",motto:"Nous voyons tout.",s1:"Einhaltung \u2014 relais s\u00e9curis\u00e9 actif",s2:"Archives documentaires \u2014 v\u00e9rifi\u00e9es",s3:"R\u00e9ponses de conformit\u00e9 \u2014 en attente",s4:"Demande FERPA \u2014 en retard",resLabel:"Division Recherche Appliqu\u00e9e",resTitle:"Plateforme de D\u00e9tection Pr\u00e9coce \u2014 Cin\u00e9tique Bact\u00e9rienne",resLink:"Voir la Plateforme \u2192",footerCopy:"\u00a9 2026 Illucidate GmbH. Tous les documents conserv\u00e9s.",navServices:"Services",navScope:"Champ",navResearch:"Recherche",navContact:"Contact",modTitle:"Acc\u00e8s S\u00e9curis\u00e9",modAgent:"Num\u00e9ro d\u2019Agent",modClient:"Identifiant Client",modSubmit:"Authentifier",modFooter:"Acc\u00e8s r\u00e9serv\u00e9 aux agents et clients autoris\u00e9s. Toutes les tentatives sont enregistr\u00e9es."}
+    };
+    let cl='de';
+    function sl(lang){
+      cl=lang;const s=L[lang];document.documentElement.lang=lang;
+      document.querySelectorAll('[data-i]').forEach(e=>{const k=e.getAttribute('data-i');if(s[k])e.innerHTML=s[k]});
+      document.querySelectorAll('[data-nav]').forEach(e=>{const k='nav'+e.getAttribute('data-nav').charAt(0).toUpperCase()+e.getAttribute('data-nav').slice(1);if(s[k])e.textContent=s[k]});
+      document.querySelectorAll('.lb').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));
+      document.title={de:'Illucidate \u2014 Institutionelle Einhaltung',en:'Illucidate \u2014 Institutional Compliance',fr:'Illucidate \u2014 Conformit\u00e9 Institutionnelle'}[lang];
+    }
+    document.querySelectorAll('.lb').forEach(b=>b.addEventListener('click',()=>sl(b.dataset.lang)));
+    const mod=document.getElementById('amod');
+    const openM=()=>mod.classList.add('open');
+    const closeM=()=>{mod.classList.remove('open');document.getElementById('ainp').value='';document.getElementById('cinp').value=''};
+    document.getElementById('ctrig').addEventListener('click',e=>{e.preventDefault();openM()});
+    document.querySelectorAll('.cftr').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();openM()}));
+    document.getElementById('mcls').addEventListener('click',closeM);
+    mod.addEventListener('click',e=>{if(e.target===mod)closeM()});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeM()});
+    document.getElementById('asub').addEventListener('click',()=>{
+      const a=document.getElementById('ainp').value.trim(),c=document.getElementById('cinp').value.trim();
+      if(!a||!c)return;
+      const btn=document.getElementById('asub');
+      btn.style.borderColor='var(--dng)';btn.style.color='#a04040';
+      btn.textContent={de:'Authentifizierung fehlgeschlagen. Dieser Versuch wurde protokolliert.',en:'Authentication failed. This attempt has been logged.',fr:'\u00c9chec de l\u2019authentification. Cette tentative a \u00e9t\u00e9 enregistr\u00e9e.'}[cl];
+      setTimeout(()=>{btn.style.borderColor='';btn.style.color='';sl(cl)},3000);
+    });
+    sl('de');
+  </script>
 </body>
 </html>

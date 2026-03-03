@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="36" viewBox="0 0 200 36" role="img" aria-label="Illucidate">
+  <defs>
+    <filter id="g" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="1.5" in="SourceGraphic" result="b"/>
+      <feColorMatrix in="b" type="matrix" values="0 0 0 0 0.482  0 0 0 0 0.549  0 0 0 0 0.8  0 0 0 0.3 0" result="t"/>
+      <feMerge><feMergeNode in="t"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(2,4)" filter="url(#g)">
+    <path d="M4 14 C10 4, 22 4, 28 14 C22 24, 10 24, 4 14 Z" fill="none" stroke="#7b8ccc" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="16" cy="14" r="4" fill="#7b8ccc"/>
+    <circle cx="18" cy="12" r="1.2" fill="#c8cad4" opacity="0.8"/>
+  </g>
+  <text x="42" y="24" font-family="'Cormorant Garamond','Georgia',serif" font-size="22" font-weight="400" letter-spacing="1" fill="#c8cad4">Illucidate</text>
+</svg>

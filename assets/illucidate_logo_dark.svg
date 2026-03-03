@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="180" viewBox="0 0 840 180" role="img" aria-label="Illucidate logo">
+  <title>Illucidate</title>
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" in="SourceGraphic" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.482  0 0 0 0 0.549  0 0 0 0 0.8  0 0 0 0.35 0" result="tinted"/>
+      <feMerge>
+        <feMergeNode in="tinted"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="subtle-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" in="SourceGraphic" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.482  0 0 0 0 0.549  0 0 0 0 0.8  0 0 0 0.15 0" result="tinted"/>
+      <feMerge>
+        <feMergeNode in="tinted"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Eye icon -->
+  <g transform="translate(40,40)" filter="url(#glow)">
+    <!-- Eye outline -->
+    <path d="M20 50 C45 15, 95 15, 120 50 C95 85, 45 85, 20 50 Z" 
+          fill="none" stroke="#7b8ccc" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Pupil -->
+    <circle cx="70" cy="50" r="14" fill="#7b8ccc" stroke="none"/>
+    <!-- Highlight -->
+    <circle cx="77" cy="43" r="3.5" fill="#c8cad4" stroke="none" opacity="0.8"/>
+  </g>
+
+  <!-- Wordmark - using web-safe serif to approximate Cormorant Garamond -->
+  <text x="210" y="108" 
+        font-family="'Cormorant Garamond', 'Georgia', 'Times New Roman', serif" 
+        font-size="72" 
+        font-weight="400" 
+        letter-spacing="2" 
+        fill="#c8cad4">Illucidate</text>
+
+  <!-- Tagline -->
+  <text x="213" y="142" 
+        font-family="'DM Mono', 'Consolas', 'Courier New', monospace" 
+        font-size="11.5" 
+        font-weight="300" 
+        letter-spacing="5.5" 
+        fill="#3d4260">EINHALTUNG</text>
+</svg>
