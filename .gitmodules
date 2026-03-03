@@ -1,3 +1,3 @@
 [submodule "illucidate"]
-	path = illucidate2
-	url = https://github.com/jaegertros/illucidate2.git
+    path = illucidate
+    url = https://github.com/jaegertros/illucidate2
