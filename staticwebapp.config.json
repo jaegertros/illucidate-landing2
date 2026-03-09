@@ -45,6 +45,15 @@
       "rewrite": "/multivariate.html"
     },
     {
+      "route": "/master-timeline",
+      "rewrite": "/master-timeline.html"
+    },
+    {
+      "route": "/timeline",
+      "redirect": "/master-timeline",
+      "statusCode": 301
+    },
+    {
       "route": "/research",
       "redirect": "/multivariate",
       "statusCode": 301
@@ -77,6 +86,11 @@
     {
       "route": "/multivariate.html",
       "redirect": "/multivariate",
+      "statusCode": 301
+    },
+    {
+      "route": "/master-timeline.html",
+      "redirect": "/master-timeline",
       "statusCode": 301
     }
   ]

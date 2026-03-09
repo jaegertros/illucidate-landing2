@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Illucidate Master Timeline</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<link rel="stylesheet" href="/styles/master-timeline.css">
+
+</head>
+
+<body>
+
+<div class="app">
+
+<h1>Master Timeline</h1>
+
+<div class="controls">
+
+<button id="addRow">Add Entry</button>
+<button id="resetDefault">Reset</button>
+<button id="exportData">Export JSON</button>
+<button id="exportPDF">Export PDF</button>
+
+<label>Zoom
+<input id="zoomSlider" type="range" min="1" max="10" value="3">
+</label>
+
+</div>
+
+<div id="timelineVisual"></div>
+
+<div id="timelineContainer"></div>
+
+</div>
+
+<script src="/scripts/master-timeline.js"></script>
+
+</body>
+</html>

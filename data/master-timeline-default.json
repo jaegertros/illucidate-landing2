@@ -1,0 +1,356 @@
+{
+  "items": [
+    {
+      "date": "2023-09-01",
+      "label": "Registered for graduation (Fall 2023)",
+      "evidence": "",
+      "tags": ["estoppel"]
+    },
+    {
+      "date": "2024-01-15",
+      "label": "Registered for graduation (Spring 2024)",
+      "evidence": "",
+      "tags": ["estoppel"]
+    },
+    {
+      "date": "2024-06-01",
+      "label": "Registered for graduation (Summer 2024)",
+      "evidence": "",
+      "tags": ["estoppel"]
+    },
+    {
+      "date": "2024-09-01",
+      "label": "Registered for graduation (Fall 2024)",
+      "evidence": "",
+      "tags": ["estoppel"]
+    },
+    {
+      "date": "2025-01-15",
+      "label": "Registered for graduation (Spring 2025)",
+      "evidence": "",
+      "tags": ["estoppel"]
+    },
+    {
+      "date": "2025-06-01",
+      "label": "Registered for graduation (Summer 2025)",
+      "evidence": "",
+      "tags": ["estoppel"]
+    },
+    {
+      "date": "2025-09-01",
+      "label": "Registered for graduation (Fall 2025)",
+      "evidence": "",
+      "tags": ["estoppel"]
+    },
+    {
+      "date": "2026-01-15",
+      "label": "Registered for graduation (Spring 2026)",
+      "evidence": "",
+      "tags": ["estoppel"]
+    },
+
+    {
+      "date": "2024-06-01",
+      "label": "Luisa Valentina Mora Pérez arrives; intensive lab collaboration begins",
+      "evidence": "",
+      "tags": []
+    },
+    {
+      "date": "2024-06-01",
+      "label": "Kal Holder displays private complaint messages to lab members (FERPA breach)",
+      "evidence": "",
+      "tags": ["ferpa","harassment"]
+    },
+    {
+      "date": "2024-06-01",
+      "label": "Defamation campaign begins following complaint",
+      "evidence": "",
+      "tags": ["defamation"]
+    },
+    {
+      "date": "2024-06-15",
+      "label": "Luisa reportedly manipulated after removal from lab",
+      "evidence": "",
+      "tags": ["retaliation"]
+    },
+    {
+      "date": "2024-06-15",
+      "label": "Kal's disciplinary panel role enables ongoing FERPA concerns",
+      "evidence": "",
+      "tags": ["ferpa"]
+    },
+    {
+      "date": "2024-07-04",
+      "label": "Accusations escalate to 'attempted rape' after complaint dismissal",
+      "evidence": "",
+      "tags": ["defamation","retaliation"]
+    },
+    {
+      "date": "2024-07-10",
+      "label": "False complaint filed; Luisa removed from lab",
+      "evidence": "",
+      "tags": ["retaliation","harassment"]
+    },
+
+    {
+      "date": "2025-01-01",
+      "label": "Keyshla Narváez-Dávila receives immediate funding while Caleb remains unpaid",
+      "evidence": "",
+      "tags": ["ip_theft","retaliation"]
+    },
+    {
+      "date": "2025-01-01",
+      "label": "Keyshla graduates using project overlapping with Caleb's work",
+      "evidence": "",
+      "tags": ["ip_theft"]
+    },
+    {
+      "date": "2025-01-01",
+      "label": "Applegate repeatedly promises imminent graduation",
+      "evidence": "",
+      "tags": ["estoppel"]
+    },
+
+    {
+      "date": "2025-07-01",
+      "label": "Nicholas Gallina targeted by Kal and Keyshla",
+      "evidence": "",
+      "tags": ["retaliation","harassment"]
+    },
+
+    {
+      "date": "2025-10-02",
+      "label": "Brenda Pickett performs unsanctioned early-morning office inspections",
+      "evidence": "",
+      "tags": ["harassment"]
+    },
+    {
+      "date": "2025-10-02",
+      "label": "Trevor Lim and Kal make sexually explicit lab jokes",
+      "evidence": "",
+      "tags": ["harassment"]
+    },
+    {
+      "date": "2025-10-02",
+      "label": "Applegate discourages reporting Trevor's misconduct",
+      "evidence": "",
+      "tags": ["obstruction","harassment"]
+    },
+    {
+      "date": "2025-10-21",
+      "label": "Threatening door sign discovered and removed without notice",
+      "evidence": "",
+      "tags": ["harassment","threat"]
+    },
+    {
+      "date": "2025-10-21",
+      "label": "Applegate reveals investigation already noted writing inconsistencies",
+      "evidence": "",
+      "tags": ["obstruction","retaliation"]
+    },
+
+    {
+      "date": "2025-12-02",
+      "label": "Letter sent to Applegate documenting Lux Project authorship concerns",
+      "evidence": "",
+      "tags": ["report"]
+    },
+    {
+      "date": "2025-12-02",
+      "label": "Immediate meeting with Applegate following documentation email",
+      "evidence": "",
+      "tags": ["retaliation"]
+    },
+    {
+      "date": "2025-12-02",
+      "label": "Applegate suggests quitting rather than pursuing accountability",
+      "evidence": "",
+      "tags": ["retaliation","threat"]
+    },
+    {
+      "date": "2025-12-02",
+      "label": "Applegate deflects responsibility using personal hardships",
+      "evidence": "",
+      "tags": ["obstruction"]
+    },
+    {
+      "date": "2025-12-02",
+      "label": "Applegate attacks Luisa's credibility during meeting",
+      "evidence": "",
+      "tags": ["retaliation","defamation"]
+    },
+    {
+      "date": "2025-12-02",
+      "label": "Applegate requests delay of evidence disclosure until others graduate",
+      "evidence": "",
+      "tags": ["obstruction","retaliation"]
+    },
+    {
+      "date": "2025-12-02",
+      "label": "Keyshla Narváez-Dávila graduates with project overlapping Caleb's work",
+      "evidence": "",
+      "tags": ["ip_theft","retaliation"]
+    },
+
+    {
+      "date": "2025-12-11",
+      "label": "Suspicious grade change notice received from Registrar",
+      "evidence": "",
+      "tags": ["retaliation"]
+    },
+    {
+      "date": "2025-12-19",
+      "label": "Applegate demands work, threatens graduation, references FERPA-protected records",
+      "evidence": "",
+      "tags": ["threat","ferpa","retaliation"]
+    },
+    {
+      "date": "2025-12-22",
+      "label": "Formal FERPA Record of Disclosures request submitted",
+      "evidence": "",
+      "tags": ["request","ferpa"]
+    },
+    {
+      "date": "2025-12-25",
+      "label": "Registrar confirms grade was newly submitted by Applegate",
+      "evidence": "",
+      "tags": ["ferpa","retaliation"]
+    },
+
+    {
+      "date": "2026-01-08",
+      "label": "Lab inspection confrontation and verbal death threat by Applegate",
+      "evidence": "",
+      "tags": ["threat","retaliation"]
+    },
+    {
+      "date": "2026-01-10",
+      "label": "Parking lot surveillance by Applegate reported to Purdue Police",
+      "evidence": "",
+      "tags": ["threat","report"]
+    },
+    {
+      "date": "2026-01-12",
+      "label": "Purdue Police open investigation into door sign incident",
+      "evidence": "",
+      "tags": ["report"]
+    },
+    {
+      "date": "2026-01-13",
+      "label": "Fraudulent transcript request submitted through Parchment system",
+      "evidence": "",
+      "tags": ["ferpa","retaliation"]
+    },
+    {
+      "date": "2026-01-13",
+      "label": "Request for safety, housing, and employment intervention sent to OCR",
+      "evidence": "",
+      "tags": ["request","report"]
+    },
+    {
+      "date": "2026-01-21",
+      "label": "OCR denies no-contact order request",
+      "evidence": "",
+      "tags": ["obstruction"]
+    },
+
+    {
+      "date": "2026-02-09",
+      "label": "FERPA Record of Disclosures deadline",
+      "evidence": "",
+      "tags": ["ferpa","request"]
+    },
+    {
+      "date": "2026-02-18",
+      "label": "Associate Dean Steven Yeagley informed of ongoing issues",
+      "evidence": "",
+      "tags": ["report"]
+    },
+    {
+      "date": "2026-02-19",
+      "label": "Follow-up after Yeagley states he cannot assist",
+      "evidence": "",
+      "tags": ["obstruction"]
+    },
+    {
+      "date": "2026-02-21",
+      "label": "TA contract forwarded to OCR to reconsider case",
+      "evidence": "",
+      "tags": ["request"]
+    },
+    {
+      "date": "2026-02-23",
+      "label": "Registrar inquiry requesting identity of grade changer",
+      "evidence": "",
+      "tags": ["request","ferpa"]
+    },
+    {
+      "date": "2026-02-24",
+      "label": "Evidence preservation request for surveillance footage",
+      "evidence": "",
+      "tags": ["request"]
+    },
+
+    {
+      "date": "2026-02-27",
+      "label": "Follow-up on no-contact request with University",
+      "evidence": "",
+      "tags": ["request"]
+    },
+    {
+      "date": "2026-02-27",
+      "label": "Follow-up regarding files and no-contact request",
+      "evidence": "",
+      "tags": ["request","obstruction"]
+    },
+    {
+      "date": "2026-02-27",
+      "label": "Public records request for stalking report documents",
+      "evidence": "",
+      "tags": ["request"]
+    },
+    {
+      "date": "2026-02-27",
+      "label": "Invitation sent to University to correct lack of assistance",
+      "evidence": "",
+      "tags": ["report"]
+    },
+
+    {
+      "date": "2026-03-03",
+      "label": "Police confirm surveillance footage overwritten after 30 days",
+      "evidence": "",
+      "tags": ["obstruction"]
+    },
+    {
+      "date": "2026-03-03",
+      "label": "Public records office acknowledges request",
+      "evidence": "",
+      "tags": ["request"]
+    },
+    {
+      "date": "2026-03-04",
+      "label": "TA documentation received for two semesters",
+      "evidence": "",
+      "tags": ["request"]
+    },
+    {
+      "date": "2026-03-04",
+      "label": "Graduate School approves Examining Committee appointment",
+      "evidence": "",
+      "tags": ["estoppel"]
+    },
+    {
+      "date": "2026-03-06",
+      "label": "FERPA metadata request submitted for transcript attempt",
+      "evidence": "",
+      "tags": ["request","ferpa"]
+    },
+    {
+      "date": "2026-03-06",
+      "label": "Legal Counsel discloses January transcript request attempt",
+      "evidence": "",
+      "tags": ["ferpa"]
+    }
+  ]
+}
