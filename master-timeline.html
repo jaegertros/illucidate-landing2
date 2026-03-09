@@ -1,44 +1,567 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Illucidate Master Timeline</title>
-
+<title>Master Timeline</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-<link rel="stylesheet" href="/styles/master-timeline.css">
-
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; }
+  body { background: #080616; min-height: 100vh; overflow-x: hidden; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #0e0b20; }
+  ::-webkit-scrollbar-thumb { background: #3a2f6a; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #5a46a0; }
+</style>
 </head>
-
 <body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useRef, useCallback, useEffect } = React;
 
-<div class="app">
+/* ─── TAG DEFINITIONS ─────────────────────────────────────── */
+const INITIAL_TAGS = [
+  { id: "retaliation", label: "Retaliation",           color: "#ff6b6b" },
+  { id: "ferpa",       label: "FERPA Violation",        color: "#60a5fa" },
+  { id: "threat",      label: "Threat / Intimidation",  color: "#c084fc" },
+  { id: "harassment",  label: "Harassment",             color: "#f87171" },
+  { id: "defamation",  label: "Defamation",             color: "#fb923c" },
+  { id: "estoppel",    label: "Promissory Estoppel",     color: "#fbbf24" },
+  { id: "ip_theft",    label: "IP Theft / Grant Fraud",  color: "#34d399" },
+  { id: "report",      label: "Report / Complaint",      color: "#2dd4bf" },
+  { id: "request",     label: "Records Request",         color: "#38bdf8" },
+  { id: "obstruction", label: "Obstruction / Deflection",color: "#94a3b8" },
+];
 
-<h1>Master Timeline</h1>
+const TAG_LANES = {
+  retaliation: { side: "left",  lane: 0 },
+  ferpa:       { side: "left",  lane: 1 },
+  threat:      { side: "left",  lane: 2 },
+  harassment:  { side: "left",  lane: 3 },
+  defamation:  { side: "left",  lane: 4 },
+  report:      { side: "right", lane: 0 },
+  estoppel:    { side: "right", lane: 1 },
+  ip_theft:    { side: "right", lane: 2 },
+  request:     { side: "right", lane: 3 },
+  obstruction: { side: "right", lane: 4 },
+};
+const LANE_OFFSETS  = [20, 36, 52, 68, 84];
+const Y_SLOTS       = [0.25, 0.5, 0.75];
+const BRACKET_RADIUS = 4;
 
-<div class="controls">
+/* ─── EVENT DATA ──────────────────────────────────────────── */
+const INITIAL_EVENTS = [
+  // Promissory Estoppel
+  { id:"pe-1", date:"2023-09-01", title:"Registered for graduation (Fall 2023)",   description:"Per Dr. Applegate's direction, registered to graduate. Thesis defense not scheduled due to lack of direction and oversight.", tags:["estoppel"], connections:[] },
+  { id:"pe-2", date:"2024-01-15", title:"Registered for graduation (Spring 2024)", description:"Per Dr. Applegate's direction, registered again to graduate. Thesis defense not scheduled due to lack of direction and oversight.", tags:["estoppel"], connections:["pe-1"] },
+  { id:"pe-3", date:"2024-06-01", title:"Registered for graduation (Summer 2024)", description:"Per Dr. Applegate's direction, registered again to graduate.", tags:["estoppel"], connections:["pe-2"] },
+  { id:"pe-4", date:"2024-09-01", title:"Registered for graduation (Fall 2024)",   description:"Per Dr. Applegate's direction, registered again to graduate.", tags:["estoppel"], connections:["pe-3"] },
+  { id:"pe-5", date:"2025-01-15", title:"Registered for graduation (Spring 2025)", description:"Per Dr. Applegate's direction, registered again to graduate.", tags:["estoppel"], connections:["pe-4"] },
+  { id:"pe-6", date:"2025-06-01", title:"Registered for graduation (Summer 2025)", description:"Per Dr. Applegate's direction, registered again to graduate.", tags:["estoppel"], connections:["pe-5"] },
+  { id:"pe-7", date:"2025-09-01", title:"Registered for graduation (Fall 2025)",   description:"Per Dr. Applegate's direction, registered again to graduate.", tags:["estoppel"], connections:["pe-6"] },
+  { id:"pe-8", date:"2026-01-15", title:"Registered for graduation (Spring 2026)", description:"Per Dr. Applegate's direction, registered again to graduate.", tags:["estoppel"], connections:["pe-7"] },
 
-<button id="addRow">Add Entry</button>
-<button id="resetDefault">Reset</button>
-<button id="exportData">Export JSON</button>
-<button id="exportPDF">Export PDF</button>
+  // 2024 arc
+  { id:"bg-1",          date:"2024-06-01", title:"Luisa's arrival and intensive collaboration",          description:"Luisa Valentina Mora Pérez arrived at lab as visiting researcher/intern and requested exclusive collaboration with Caleb. Intensive summer period followed with full-day work sessions, mutual enthusiasm, and stabilization of lab environment.", tags:[], connections:[] },
+  { id:"ferpa-kal",     date:"2024-06-01", title:"FERPA breach: Kal shows private messages",            description:"Kal displayed private messages and complaint content to others including Nicholas Gallina. This violated FERPA and created awareness of the complaint across the lab.", tags:["ferpa","harassment"], connections:[] },
+  { id:"def-1",         date:"2024-06-01", title:"Defamation campaign begins",                          description:"False accusations initiated. Would later escalate from 'harassment' to 'attempted rape' after complaint dismissal.", tags:["defamation"], connections:["ferpa-kal"] },
+  { id:"luisa-manip",   date:"2024-06-15", title:"Luisa reportedly manipulated after removal",          description:"Post-removal period. Luisa was reportedly manipulated by Kal Holder and Keyshla Narváez-Dávila; possibly pressured due to immigration status and prior trauma.", tags:["retaliation"], connections:["bg-1"] },
+  { id:"kal-panels",    date:"2024-06-15", title:"Kal's position enables ongoing FERPA violations",     description:"Kal's position on disciplinary panels created institutional conflict of interest and enabled access to confidential information.", tags:["ferpa"], connections:["ferpa-kal"] },
+  { id:"def-2",         date:"2024-07-04", title:"Accusations escalate to 'attempted rape'",            description:"After complaint dismissal, accusations escalated from 'harassment' to 'attempted rape' within days. Kal spread the accusation at the largest social event of the year; recruited Keyshla to repeat it publicly.", tags:["defamation","retaliation"], connections:["def-1"] },
+  { id:"false-complaint",date:"2024-07-10",title:"False complaint filed; Luisa removed from lab",       description:"False complaint filed against Caleb showing signs of manipulation. Investigation dismissed complaint due to inconsistencies. Luisa abruptly disappeared.", tags:["retaliation","harassment"], connections:["luisa-manip","def-2"] },
 
-<label>Zoom
-<input id="zoomSlider" type="range" min="1" max="10" value="3">
-</label>
+  // 2025: Keyshla, funding, promises
+  { id:"key-fund",       date:"2025-01-01", title:"Keyshla received immediate funding; Caleb unpaid",   description:"Bruce Applegate gave Keyshla money immediately when she lacked funding. Caleb remained unpaid for 2 years because Bruce said 'you're a survivor' — discriminatory funding pattern.", tags:["ip_theft","retaliation"], connections:[] },
+  { id:"key-grad",       date:"2025-01-01", title:"Keyshla graduated with allegedly borrowed project",  description:"Keyshla graduated using 'reskinned project' with experiments on lettuce, parsley, cilantro — allegedly based on Caleb's work.", tags:["ip_theft"], connections:["key-fund"] },
+  { id:"bruce-promises", date:"2025-01-01", title:"Repeated promises of imminent graduation",           description:"Bruce repeatedly promised Caleb would graduate 'soon' if he stayed, causing Caleb to miss seeing dying grandfather. Pattern of empty promises.", tags:["estoppel"], connections:["pe-5"] },
 
-</div>
+  // July 2025
+  { id:"nick-target", date:"2025-07-01", title:"Kal and Keyshla target Nicholas Gallina",               description:"Kal and Keyshla brought unaffiliated person into BSL-2 area with Trevor to confront/pressure Nicholas Gallina in retaliation.", tags:["retaliation","harassment"], connections:["def-2"] },
 
-<div id="timelineVisual"></div>
+  // October 2025
+  { id:"brenda",       date:"2025-10-02", title:"Brenda Pickett's unsanctioned 6 AM office audits",    description:"Brenda Pickett entered office three separate mornings at ~6 AM to audit whether Caleb was 'living in the office' despite institutional knowledge of homelessness.", tags:["harassment"], connections:[] },
+  { id:"sex-jokes",    date:"2025-10-02", title:"Trevor and Kal make sexually explicit lab jokes",      description:"Trevor Lim and Kal made sexually explicit jokes in lab environment (masturbation joke about vortexing machine).", tags:["harassment"], connections:[] },
+  { id:"bruce-noreport",date:"2025-10-02",title:"Bruce discourages reporting Trevor's misconduct",      description:"Bruce Applegate told Caleb not to report Trevor Lim's behavior because it could 'get Trevor into trouble.' Discouraged reporting and protected perpetrator.", tags:["obstruction","harassment"], connections:["sex-jokes"] },
+  { id:"door-sign",    date:"2025-10-21", title:"Threatening door sign removed without notice",         description:"Threatening door sign discovered and removed by institutional authority without documentation. Bruce later admitted seeing sign but choosing not to inform Caleb.", tags:["harassment","threat"], connections:[] },
+  { id:"writing-incon",date:"2025-10-21", title:"Bruce reveals investigation found writing inconsistencies", description:"Bruce confirmed investigation 'already noted inconsistency in writing style' suggesting complaint manipulation, but chose not to act.", tags:["obstruction","retaliation"], connections:["false-complaint"] },
 
-<div id="timelineContainer"></div>
+  // December 2, 2025
+  { id:"dec2-report",   date:"2025-12-02", title:"Letter to Applegate re: Lux Project & authorship",   description:"Sent letter/documentation email raising lack of response to Lux Project and lack of credit for work effort.", tags:["report"], connections:[] },
+  { id:"dec2-meeting",  date:"2025-12-02", title:"Immediate in-person meeting with Bruce",              description:"Meeting occurred minutes after Caleb sent documentation email. Bruce opened with 'What do you want me to do?' — reactive rather than proactive response.", tags:["retaliation"], connections:["dec2-report"] },
+  { id:"dec2-quit",     date:"2025-12-02", title:"Bruce suggests quitting as easier alternative",       description:"During meeting, Bruce suggested quitting would be easier than pursuing accountability. Used language implying degree could be withheld if Caleb continued reporting.", tags:["retaliation","threat"], connections:["dec2-meeting"] },
+  { id:"dec2-deflect",  date:"2025-12-02", title:"Bruce uses personal hardships to deflect",            description:"Bruce used personal tragedies (son-in-law's cancer, sick cat) to deflect responsibility and frame Caleb's reporting as unfair burden.", tags:["obstruction"], connections:["dec2-meeting"] },
+  { id:"dec2-luisa",    date:"2025-12-02", title:"Bruce weaponizes Caleb's care for Luisa",             description:"Bruce attacked Luisa's character, suggesting she 'knew what she was doing' — weaponizing Caleb's care to undermine credibility.", tags:["retaliation","defamation"], connections:["dec2-meeting","luisa-manip"] },
+  { id:"dec2-delay",    date:"2025-12-02", title:"Bruce requests delay until others graduate",          description:"Bruce asked for all compiled evidence to use 'in six years' when others graduate so disciplinary action won't affect their degrees.", tags:["obstruction","retaliation"], connections:["dec2-meeting"] },
+  { id:"dec2-keyshla",  date:"2025-12-02", title:"Keyshla's graduation & authorship erasure",           description:"Keyshla M. Narváez-Dávila graduates before Caleb, defending a suspiciously similar phage-bacteria project. Misspelled Caleb's name as 'Waddle' — continuing pattern of authorship erasure.", tags:["ip_theft","retaliation"], connections:["key-grad"] },
 
-</div>
+  // December 2025 continued
+  { id:"dec11-grade",  date:"2025-12-11", title:"Suspicious grade change notice",                       description:"Received notice from the Office of the Registrar regarding a recent grade change — described as a late grade submission or correction initiated by the instructor.", tags:["retaliation"], connections:["dec2-report"] },
+  { id:"dec19-threat", date:"2025-12-19", title:"Applegate demands work, threatens, reveals FERPA knowledge", description:"Dr. Applegate requested my work to give to Michael. I refused. He threatened to block graduation and publication. Referenced two specific incidents from my Residential Life record from a decade prior.", tags:["threat","ferpa","retaliation"], connections:["dec2-report","dec11-grade"] },
+  { id:"dec22-ferpa",  date:"2025-12-22", title:"Formal FERPA Record of Disclosures request submitted", description:"Submitted formal request to Purdue's Office of Registrar for FERPA-mandated record of all access events from Dec 1, 2023 – Dec 31, 2025.", tags:["request","ferpa"], connections:["dec19-threat"] },
+  { id:"dec25-grade",  date:"2025-12-25", title:"Registrar confirms: new grade submission by Applegate", description:"Office of the Registrar confirmed the grade had not been submitted prior — this was a new submission by Dr. Bruce Applegate, not a correction.", tags:["ferpa","retaliation"], connections:["dec11-grade"] },
 
-<script src="/scripts/master-timeline.js"></script>
+  // January 2026
+  { id:"jan8-threat",    date:"2026-01-08", title:"Lab inspection interrogation & death threat",        description:"Applegate called asking if I reported the lab, if I was 'playing games.' Interrogation in lab with threat to block graduation and a 'joke' about ways he could murder me.", tags:["threat","retaliation"], connections:["dec19-threat"] },
+  { id:"jan10-stalk",    date:"2026-01-10", title:"Parking lot surveillance by Applegate",              description:"Dr. Applegate followed me through a parking lot and surveilled my vehicle. Reported to Purdue University Police.", tags:["threat","report"], connections:["jan8-threat"] },
+  { id:"jan12-pupd",     date:"2026-01-12", title:"PUPD investigation opened on door sign",             description:"Purdue University Police Department formally opens investigation into door sign incident from October 2025. Detective Andrew LePard initiates contact.", tags:["report"], connections:["door-sign"] },
+  { id:"jan13-transcript",date:"2026-01-13",title:"Fraudulent transcript request submitted",            description:"A fraudulent transcript request was submitted via Purdue's Parchment system — 3 days after the parking lot incident, 5 days after the verbal death threat.", tags:["ferpa","retaliation"], connections:["jan8-threat","jan10-stalk"] },
+  { id:"jan13-safety",   date:"2026-01-13", title:"Request for safety, housing & employment intervention", description:"Emailed Maggie Lee Wetzel at the Office of Civil Rights requesting safety, housing, and employment intervention.", tags:["request","report"], connections:["jan10-stalk","jan8-threat"] },
+  { id:"jan21-deny",     date:"2026-01-21", title:"OCR denies no-contact order — 'not a student'",     description:"Christia Wright, J.D., CCEP responded: no-contact request not issued since Applegate wasn't a student. Referred to local police.", tags:["obstruction"], connections:["jan13-safety"] },
 
+  // February 2026
+  { id:"feb9-deadline",  date:"2026-02-09", title:"FERPA Record of Disclosures deadline (conservative)", description:"Federal deadline for Purdue University Office of Registrar to provide complete FERPA Record of Disclosures access logs (45-day window with 3-day buffer).", tags:["ferpa","request"], connections:["dec22-ferpa"] },
+  { id:"feb18-yeagley",  date:"2026-02-18", title:"Informed Dean Yeagley of ongoing issues",            description:"Responded to email about a 'student of concern.' Informed Steven W. Yeagley (Associate Dean, Crisis Management) of many ongoing and past issues.", tags:["report"], connections:[] },
+  { id:"feb19-yeagley",  date:"2026-02-19", title:"Follow-up after Yeagley says he cannot help",       description:"Responded to Mr. Yeagley's reply, which stated he basically could not help.", tags:["obstruction"], connections:["feb18-yeagley"] },
+  { id:"feb21-ta",       date:"2026-02-21", title:"TA contract forwarded to OCR to reconsider case",   description:"Forwarded Spring 2026 TA contract to Christia Wright requesting case be reconsidered — demonstrating employment relationship.", tags:["request"], connections:["jan21-deny"] },
+  { id:"feb23-grade",    date:"2026-02-23", title:"Request to Registrar: who changed grade?",           description:"Emailed Betty L. Lewis requesting to know who changed the grade on academic record.", tags:["request","ferpa"], connections:["dec11-grade"] },
+  { id:"feb24-camera",   date:"2026-02-24", title:"Evidence preservation request: surveillance footage", description:"Requested surveillance camera footage from Purdue Police Department for evidence preservation related to the parking lot incident.", tags:["request"], connections:["jan10-stalk"] },
+  { id:"feb27-nc",       date:"2026-02-27", title:"Follow-up on no-contact request",                   description:"Followed up with Lindsey M. Bruce on the no-contact request. Christia Wright responded same day: still not issued, referred to local police.", tags:["request"], connections:["jan21-deny"] },
+  { id:"feb27-files",    date:"2026-02-27", title:"Follow-up: files and no-contact request",            description:"Emailed Lindsey M. Bruce following up on two items: files and no-contact request.", tags:["request","obstruction"], connections:["feb27-nc"] },
+  { id:"feb27-records",  date:"2026-02-27", title:"Public records request: stalking report documents",  description:"Requested all documents related to police report filed for stalking and threats.", tags:["request"], connections:["jan10-stalk"] },
+  { id:"feb27-invite",   date:"2026-02-27", title:"Invitation for University to correct lack of help",  description:"Sent communication to Christia Wright inviting the University to correct its lack of help in the matter.", tags:["report"], connections:["jan21-deny","feb19-yeagley"] },
+
+  // March 2026
+  { id:"mar3-camera",    date:"2026-03-03", title:"Police: surveillance footage already overwritten",   description:"Randee Treida (Litigation Coordinator) responded: video is overwritten after 30 days, so it no longer exists.", tags:["obstruction"], connections:["feb24-camera"] },
+  { id:"mar3-records",   date:"2026-03-03", title:"Public records acknowledges request",                description:"Taylor Bates (Office of Public Records) acknowledged receipt of the records request.", tags:["request"], connections:["feb27-records"] },
+  { id:"mar4-ta",        date:"2026-03-04", title:"TA documentation received (2 semesters)",            description:"Patricia Dimmitt (Senior Graduate Program Coordinator) sent documentation for 2 semesters of TA roles.", tags:["request"], connections:["feb21-ta"] },
+  { id:"mar4-committee", date:"2026-03-04", title:"Examining Committee appointment approved",           description:"Graduate School sent approval notice for Appointment of Examining Committee.", tags:["estoppel"], connections:["pe-8"] },
+  { id:"mar6-ferpa",     date:"2026-03-06", title:"FERPA metadata request for fraudulent transcript",   description:"Submitted request to ferpa@purdue.edu, Registrar, and Office of Legal Counsel for metadata associated with the fraudulent transcript request.", tags:["request","ferpa"], connections:["jan13-transcript"] },
+  { id:"mar6-disclose",  date:"2026-03-06", title:"Legal Counsel discloses Jan 13 transcript request",  description:"Received correspondence from Kaity Heide disclosing that on January 13, 2026, an attempt was made to obtain a copy of my official academic transcript through the Parchment system.", tags:["ferpa"], connections:["jan13-transcript","mar6-ferpa"] },
+];
+
+/* ─── HELPERS ─────────────────────────────────────────────── */
+const parseDate    = s  => new Date(s + "T00:00:00");
+const fmtDate      = s  => parseDate(s).toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+const fmtDateShort = s  => parseDate(s).toLocaleDateString("en-US", { month:"short", day:"numeric" });
+const daysBetween  = (a,b) => Math.round((parseDate(b) - parseDate(a)) / 86400000);
+
+/* ─── ICONS ───────────────────────────────────────────────── */
+const PlusIcon    = () => <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>;
+const EditIcon    = () => <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M11.5 1.5l3 3L5 14H2v-3L11.5 1.5z"/></svg>;
+const TrashIcon   = () => <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 4h12M5.3 4V2.7a1 1 0 011-1h3.4a1 1 0 011 1V4M6.3 7v4.6M9.7 7v4.6"/><path d="M3.3 4l.8 9.3a1 1 0 001 .9h5.8a1 1 0 001-.9L12.7 4"/></svg>;
+const LinkIcon    = () => <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M6.7 9.3a3.3 3.3 0 004.6 0l2-2a3.3 3.3 0 00-4.6-4.6L7.3 4"/><path d="M9.3 6.7a3.3 3.3 0 00-4.6 0l-2 2a3.3 3.3 0 004.6 4.6L8.7 12"/></svg>;
+const XIcon       = () => <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>;
+const ChevronIcon = ({open}) => <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" style={{transform: open ? "rotate(90deg)" : "rotate(0deg)", transition:"transform 0.15s", flexShrink:0, marginTop:3}}><polyline points="6 4 10 8 6 12"/></svg>;
+const DownloadIcon= () => <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M8 2v8M5 8l3 3 3-3"/><path d="M2 13h12"/></svg>;
+const CollapseIcon= () => <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 6l4 4 4-4"/></svg>;
+const ExpandIcon  = () => <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M4 10l4-4 4 4"/></svg>;
+
+/* ─── TAG COMPONENTS ──────────────────────────────────────── */
+const TagDots = ({tags, tagMap}) => {
+  const colors = tags.map(t => tagMap[t]?.color).filter(Boolean);
+  if (!colors.length) return <div style={{width:10, height:10}}/>;
+  if (colors.length === 1) return <div style={{width:9, height:9, borderRadius:"50%", background:colors[0], border:"2px solid #1a1535", boxShadow:`0 0 0 1.5px ${colors[0]}44`, flexShrink:0}}/>;
+  return (
+    <div style={{position:"relative", width:9, height: 4 + colors.length * 5, flexShrink:0}}>
+      {colors.map((c,i) => <div key={i} style={{position:"absolute", top: i*5, left:0, width:9, height:9, borderRadius:"50%", background:c, border:"1.5px solid #1a1535", zIndex:colors.length - i}}/>)}
+    </div>
+  );
+};
+
+const TagPills = ({tags, tagMap}) => (
+  <div style={{display:"flex", gap:2, flexWrap:"wrap"}}>
+    {tags.map(tid => {
+      const t = tagMap[tid]; if (!t) return null;
+      return <span key={tid} style={{fontSize:8, color:t.color, background:t.color+"18", border:`1px solid ${t.color}30`, padding:"0px 5px", borderRadius:2, fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase", lineHeight:1.7, whiteSpace:"nowrap"}}>{t.label}</span>;
+    })}
+  </div>
+);
+
+const TagPicker = ({selected, allTags, onChange}) => (
+  <div style={{display:"flex", gap:4, flexWrap:"wrap"}}>
+    {allTags.map(t => {
+      const active = selected.includes(t.id);
+      return <button key={t.id} type="button" onClick={() => onChange(active ? selected.filter(s => s !== t.id) : [...selected, t.id])}
+        style={{border:`1.5px solid ${active ? t.color : "#3a3260"}`, background: active ? t.color+"20" : "transparent", color: active ? t.color : "#6b5fa0", padding:"2px 7px", borderRadius:3, fontSize:11, fontWeight: active ? 700 : 400, cursor:"pointer", transition:"all 0.15s"}}>
+        {active ? "✓ " : ""}{t.label}
+      </button>;
+    })}
+  </div>
+);
+
+/* ─── HORIZONTAL TIMELINE COMPONENT ──────────────────────── */
+const HorizontalTimeline = ({events, tagMap, zoom, onClickEvent}) => {
+  const sorted  = [...events].sort((a,b) => parseDate(a.date) - parseDate(b.date));
+  if (!sorted.length) return null;
+  const minMs   = parseDate(sorted[0].date).getTime();
+  const maxMs   = parseDate(sorted[sorted.length-1].date).getTime();
+  const spanMs  = maxMs - minMs || 1;
+  const baseW   = 900;
+  const width   = baseW * (zoom / 3);
+
+  const toX = ms => ((ms - minMs) / spanMs) * (width - 80) + 40;
+
+  // Group by year for ruler
+  const years = [];
+  let y = parseDate(sorted[0].date).getFullYear();
+  const endY = parseDate(sorted[sorted.length-1].date).getFullYear();
+  while (y <= endY) { years.push(y); y++; }
+
+  return (
+    <div style={{overflowX:"auto", padding:"0 0 8px 0"}}>
+      <svg width={width} height={110} style={{display:"block", minWidth:"100%"}}>
+        {/* axis */}
+        <line x1="40" y1="52" x2={width-40} y2="52" stroke="#3a2f6a" strokeWidth="1.5"/>
+        {/* year ticks */}
+        {years.map(yr => {
+          const x = toX(new Date(yr+"-01-01T00:00:00").getTime());
+          if (x < 40 || x > width-40) return null;
+          return <g key={yr}>
+            <line x1={x} y1="46" x2={x} y2="58" stroke="#5a4a8a" strokeWidth="1"/>
+            <text x={x} y="68" textAnchor="middle" fill="#4a3f72" fontSize="9" fontFamily="'DM Mono', monospace">{yr}</text>
+          </g>;
+        })}
+        {/* events */}
+        {sorted.map((ev, i) => {
+          const x  = toX(parseDate(ev.date).getTime());
+          const pc = ev.tags?.[0] && tagMap[ev.tags[0]] ? tagMap[ev.tags[0]].color : "#7b6ac8";
+          // stagger label rows to avoid overlap
+          const row = i % 3;
+          const labelY = row === 0 ? 36 : row === 1 ? 22 : 8;
+          return (
+            <g key={ev.id} onClick={() => onClickEvent(ev.id)} style={{cursor:"pointer"}}>
+              <circle cx={x} cy="52" r="5" fill={pc} opacity="0.85" />
+              <circle cx={x} cy="52" r="5" fill="none" stroke={pc} strokeWidth="6" opacity="0.1" />
+              <line x1={x} y1={labelY+4} x2={x} y2="47" stroke={pc} strokeWidth="0.8" strokeDasharray="2,2" opacity="0.5"/>
+              <foreignObject x={x-50} y={labelY-10} width="100" height="16" style={{overflow:"visible"}}>
+                <div xmlns="http://www.w3.org/1999/xhtml" style={{fontSize:8, color:pc, fontFamily:"'DM Mono',monospace", textAlign:"center", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", maxWidth:100, letterSpacing:"0.02em"}}>
+                  {fmtDateShort(ev.date)}
+                </div>
+              </foreignObject>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+};
+
+/* ─── MAIN COMPONENT ──────────────────────────────────────── */
+export default function MasterTimeline() {
+  const [events,         setEvents        ] = useState(INITIAL_EVENTS);
+  const [allTags                          ] = useState(INITIAL_TAGS);
+  const [editing,        setEditing       ] = useState(null);
+  const [showEditor,     setShowEditor    ] = useState(false);
+  const [showConnections,setShowConnections] = useState(true);
+  const [expandedId,     setExpandedId    ] = useState(null);
+  const [connectMode,    setConnectMode   ] = useState(null);
+  const [visibleTags,    setVisibleTags   ] = useState(new Set(INITIAL_TAGS.map(t => t.id)));
+  const [filterMode,     setFilterMode    ] = useState("any");
+  const [collapseEstoppel,setCollapseEstoppel] = useState(true);
+  const [zoom,           setZoom          ] = useState(3);
+  const timelineRef = useRef(null);
+  const nodeRefs    = useRef({});
+  const tagMap = Object.fromEntries(allTags.map(t => [t.id, t]));
+
+  const estoppelIds   = new Set(events.filter(e => e.tags.length === 1 && e.tags[0] === "estoppel").map(e => e.id));
+  const firstEstoppel = events.find(e => estoppelIds.has(e.id));
+  const lastEstoppel  = [...events].filter(e => estoppelIds.has(e.id)).sort((a,b) => parseDate(a.date) - parseDate(b.date)).pop();
+  const estoppelCount = events.filter(e => estoppelIds.has(e.id)).length;
+
+  const filtered = events.filter(e => {
+    if (!e.tags || !e.tags.length) return true;
+    return filterMode === "any" ? e.tags.some(t => visibleTags.has(t)) : e.tags.every(t => visibleTags.has(t));
+  });
+  const displayed = collapseEstoppel
+    ? filtered.filter(e => !estoppelIds.has(e.id) || e.id === firstEstoppel?.id || e.id === lastEstoppel?.id)
+    : filtered;
+  const sorted = [...displayed].sort((a,b) => parseDate(a.date) - parseDate(b.date));
+
+  // Zoom-scaled gap
+  const getGap = (i) => {
+    if (i === 0) return 0;
+    const days = daysBetween(sorted[i-1].date, sorted[i].date);
+    let base;
+    if      (days === 0)  base = 3;
+    else if (days <= 2)   base = 6;
+    else if (days <= 5)   base = 14;
+    else if (days <= 7)   base = 20;
+    else if (days <= 14)  base = 28;
+    else if (days <= 30)  base = 36;
+    else if (days <= 90)  base = 44;
+    else                  base = 52;
+    return Math.round(base * (zoom / 3));
+  };
+
+  const blankForm = { date:"", title:"", description:"", tags:[], connections:[] };
+  const [form, setForm] = useState(blankForm);
+  const openNew  = ()   => { setForm(blankForm); setEditing("new"); setShowEditor(true); };
+  const openEdit = (ev) => { setForm({...ev});   setEditing(ev.id); setShowEditor(true); };
+  const saveForm = ()   => {
+    if (!form.date || !form.title) return;
+    if (editing === "new") setEvents(p => [...p, {...form, id:String(Date.now()), connections: form.connections||[]}]);
+    else setEvents(p => p.map(e => e.id === editing ? {...form} : e));
+    setEditing(null); setShowEditor(false);
+  };
+  const deleteEvent      = (id) => { setEvents(p => p.filter(e => e.id !== id).map(e => ({...e, connections: e.connections.filter(c => c !== id)}))); if (editing === id) { setEditing(null); setShowEditor(false); } };
+  const toggleConnection = (fid,tid) => { setEvents(p => p.map(e => { if (e.id !== fid) return e; const c = e.connections||[]; return {...e, connections: c.includes(tid) ? c.filter(x => x !== tid) : [...c, tid]}; })); setConnectMode(null); };
+  const toggleTag        = (id) => { setVisibleTags(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; }); };
+
+  /* connection lines */
+  const [lines, setLines] = useState([]);
+  const computeLines = useCallback(() => {
+    if (!showConnections || !timelineRef.current) return setLines([]);
+    const cr = timelineRef.current.getBoundingClientRect();
+    const nl = []; const csc = {};
+    sorted.forEach(ev => {
+      (ev.connections||[]).forEach(tid => {
+        const fe = nodeRefs.current[ev.id], te = nodeRefs.current[tid];
+        if (!fe || !te) return;
+        const fR = fe.getBoundingClientRect(), tR = te.getBoundingClientRect();
+        const tev = events.find(e => e.id === tid);
+        const shared = (ev.tags||[]).filter(t => tev?.tags?.includes(t));
+        const lt = shared[0] || ev.tags?.[0] || "retaliation";
+        const li = TAG_LANES[lt] || {side:"left", lane:0};
+        const off = LANE_OFFSETS[Math.min(li.lane, LANE_OFFSETS.length-1)];
+        const fc = tagMap[ev.tags?.[0]]?.color || "#999";
+        const tc = tagMap[tev?.tags?.[0]]?.color || "#999";
+        const sc = tagMap[lt]?.color || "#999";
+        if (!csc[ev.id]) csc[ev.id] = {left:0, right:0};
+        if (!csc[tid])   csc[tid]   = {left:0, right:0};
+        const fsi = Math.min(csc[ev.id][li.side], 2), tsi = Math.min(csc[tid][li.side], 2);
+        csc[ev.id][li.side]++; csc[tid][li.side]++;
+        const fy = (fR.top - cr.top) + fR.height * Y_SLOTS[fsi];
+        const ty = (tR.top - cr.top) + tR.height * Y_SLOTS[tsi];
+        let fx, tx, lx;
+        if (li.side === "left") { fx = fR.left - cr.left; tx = tR.left - cr.left; lx = Math.min(fx,tx) - off; }
+        else                    { fx = fR.right - cr.left; tx = tR.right - cr.left; lx = Math.max(fx,tx) + off; }
+        const r = BRACKET_RADIUS, gd = ty > fy, gl = lx < fx;
+        const hd = gl ? -1 : 1, vd = gd ? 1 : -1;
+        const path = `M ${fx} ${fy} L ${lx-r*hd} ${fy} Q ${lx} ${fy} ${lx} ${fy+r*vd} L ${lx} ${ty-r*vd} Q ${lx} ${ty} ${lx-r*hd} ${ty} L ${tx} ${ty}`;
+        nl.push({path, key:`${ev.id}-${tid}`, fromX:fx, fromY:fy, toX:tx, toY:ty, isShared: shared.length > 0, solidColor:sc, fromColor:fc, toColor:tc, gradId:`g-${ev.id}-${tid}`});
+      });
+    });
+    setLines(nl);
+  }, [sorted, showConnections, tagMap, events]);
+
+  useEffect(() => { const t = setTimeout(computeLines, 60); return () => clearTimeout(t); }, [computeLines, expandedId, events, visibleTags, collapseEstoppel, zoom]);
+  useEffect(() => { window.addEventListener("resize", computeLines); return () => window.removeEventListener("resize", computeLines); }, [computeLines]);
+
+  /* exports */
+  const exportJSON = () => {
+    const blob = new Blob([JSON.stringify({items: events}, null, 2)], {type:"application/json"});
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "master-timeline.json"; a.click();
+  };
+  const exportPDF = () => {
+    const {jsPDF} = window.jspdf;
+    const doc = new jsPDF();
+    let y = 20;
+    doc.setFontSize(16); doc.setTextColor(40,20,80);
+    doc.text("Master Timeline of Events", 20, y); y += 12;
+    [...events].sort((a,b) => a.date.localeCompare(b.date)).forEach(ev => {
+      doc.setFontSize(10); doc.setTextColor(60,40,100);
+      doc.text(`${ev.date}  —  ${ev.title}`, 20, y);
+      if (ev.description) {
+        y += 5; doc.setFontSize(8); doc.setTextColor(100,80,140);
+        const lines = doc.splitTextToSize(ev.description, 170);
+        doc.text(lines, 24, y); y += lines.length * 4 + 2;
+      }
+      y += 5; if (y > 278) { doc.addPage(); y = 20; }
+    });
+    doc.save("master-timeline.pdf");
+  };
+
+  const scrollToEvent = (id) => {
+    setExpandedId(id);
+    setTimeout(() => { nodeRefs.current[id]?.scrollIntoView({behavior:"smooth", block:"center"}); }, 80);
+  };
+
+  /* ─── RENDER ──────────────────────────────────────────────── */
+  return (
+    <div style={{fontFamily:"'DM Mono', 'Consolas', monospace", background:"#080616", minHeight:"100vh", color:"#d4cfed"}}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Mono:wght@300;400;500&display=swap');
+        * { box-sizing:border-box; margin:0; padding:0; }
+        ::selection { background:#7b5ea722; }
+        .btn { border:1px solid #3a2f6a; background:#12102a; padding:5px 11px; border-radius:3px; font-family:'DM Mono',monospace; font-size:11px; cursor:pointer; color:#9f8ed0; transition:all 0.15s; display:inline-flex; align-items:center; gap:5px; letter-spacing:0.03em; }
+        .btn:hover { background:#1e1a40; border-color:#5a4a8a; color:#c4b8e8; }
+        .btn-primary { background:#2d1f5e; color:#c4b8e8; border-color:#5a4a8a; }
+        .btn-primary:hover { background:#3d2a7a; }
+        .btn-danger { color:#ff6b6b; }
+        .btn-danger:hover { background:#2a1020; border-color:#7a2020; }
+        .fi { border:1px solid #2d2550; padding:7px 10px; border-radius:3px; font-family:'DM Mono',monospace; font-size:12px; width:100%; background:#0e0b20; color:#d4cfed; outline:none; }
+        .fi:focus { border-color:#5a4a8a; }
+        textarea.fi { resize:vertical; min-height:64px; line-height:1.5; }
+        .fl { font-size:9px; text-transform:uppercase; letter-spacing:0.1em; color:#5a4a8a; font-weight:500; margin-bottom:3px; }
+        .cp { animation: cp 1.2s ease-in-out infinite; }
+        @keyframes cp { 0%,100% { box-shadow:0 0 0 0 rgba(159,126,210,0.3); } 50% { box-shadow:0 0 0 6px rgba(159,126,210,0); } }
+        .ni { animation: ni 0.2s ease-out; }
+        @keyframes ni { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
+        .ev-row { transition: background 0.15s, border-color 0.15s; }
+        .ev-row:hover { background:#14113022 !important; }
+      `}</style>
+
+      {/* TOP BAR */}
+      <div style={{borderBottom:"1px solid #1e1a38", padding:"14px 22px", display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:10, background:"#0d0b22", position:"sticky", top:0, zIndex:20}}>
+        <div>
+          <h1 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:20, fontWeight:600, color:"#e0d8f8", letterSpacing:"-0.02em"}}>Master Timeline of Events</h1>
+          <p style={{fontSize:10, color:"#4a3f72", marginTop:1, letterSpacing:"0.04em"}}>
+            {sorted.length} event{sorted.length !== 1 ? "s" : ""}
+            {sorted.length >= 2 && ` · ${fmtDate(sorted[0].date)} — ${fmtDate(sorted[sorted.length-1].date)}`}
+          </p>
+        </div>
+        <div style={{display:"flex", gap:6, flexWrap:"wrap", alignItems:"center"}}>
+          <button className="btn" onClick={() => setCollapseEstoppel(p => !p)}>
+            {collapseEstoppel ? <ExpandIcon/> : <CollapseIcon/>}
+            {collapseEstoppel ? `Show ${estoppelCount} registrations` : "Collapse registrations"}
+          </button>
+          <button className="btn" onClick={() => setShowConnections(p => !p)}>
+            <LinkIcon/>{showConnections ? "Hide" : "Show"} Links
+          </button>
+          <button className="btn" onClick={exportJSON}><DownloadIcon/> JSON</button>
+          <button className="btn" onClick={exportPDF}><DownloadIcon/> PDF</button>
+          <button className="btn btn-primary" onClick={openNew}><PlusIcon/> Add Event</button>
+        </div>
+      </div>
+
+      {/* ZOOM + FILTER BAR */}
+      <div style={{borderBottom:"1px solid #1a1632", padding:"9px 22px", display:"flex", gap:8, flexWrap:"wrap", alignItems:"center", background:"#0a0819"}}>
+        <span style={{fontSize:9, textTransform:"uppercase", letterSpacing:"0.1em", color:"#4a3f72", fontWeight:500}}>Zoom</span>
+        <input type="range" min="1" max="6" step="0.1" value={zoom} onChange={e => setZoom(parseFloat(e.target.value))}
+          style={{width:90, accentColor:"#7b5ea7", cursor:"pointer"}}/>
+        <span style={{fontSize:9, color:"#4a3f72", minWidth:18}}>{zoom.toFixed(1)}×</span>
+        <span style={{width:1, height:16, background:"#2d2550", margin:"0 4px"}}/>
+        <span style={{fontSize:9, textTransform:"uppercase", letterSpacing:"0.1em", color:"#4a3f72", fontWeight:500}}>Filter:</span>
+        {allTags.map(tag => {
+          const active = visibleTags.has(tag.id);
+          return <button key={tag.id} onClick={() => toggleTag(tag.id)}
+            style={{border:`1.5px solid ${active ? tag.color : "#2d2550"}`, background: active ? tag.color+"18" : "transparent", color: active ? tag.color : "#3a2f6a", padding:"1px 7px", borderRadius:12, fontSize:9, fontWeight:600, cursor:"pointer", transition:"all 0.15s", letterSpacing:"0.04em"}}>
+            {tag.label}
+          </button>;
+        })}
+        <button className="btn" style={{fontSize:9, padding:"1px 7px"}} onClick={() => setFilterMode(m => m === "any" ? "all" : "any")}>
+          {filterMode === "any" ? "Any tag" : "All tags"}
+        </button>
+      </div>
+
+      {/* HORIZONTAL TIMELINE */}
+      <div style={{borderBottom:"1px solid #1a1632", padding:"14px 22px 6px", background:"#0a0819"}}>
+        <p style={{fontSize:8, textTransform:"uppercase", letterSpacing:"0.12em", color:"#3a2f6a", marginBottom:6}}>Chronological overview — click event to scroll</p>
+        <HorizontalTimeline events={sorted} tagMap={tagMap} zoom={zoom} onClickEvent={scrollToEvent}/>
+      </div>
+
+      {/* MAIN VERTICAL + EDITOR LAYOUT */}
+      <div style={{display:"flex", minHeight:"calc(100vh - 200px)"}}>
+        <div ref={timelineRef} style={{flex:1, padding:"28px 104px 80px", position:"relative", overflow:"visible"}}>
+
+          {/* SVG connection lines */}
+          {showConnections && lines.length > 0 && (
+            <svg style={{position:"absolute", top:0, left:0, width:"100%", height:"100%", pointerEvents:"none", zIndex:0, overflow:"visible"}}>
+              <defs>{lines.filter(l => !l.isShared).map(l => (
+                <linearGradient key={l.gradId} id={l.gradId} x1={l.fromX} y1={l.fromY} x2={l.toX} y2={l.toY} gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor={l.fromColor}/><stop offset="100%" stopColor={l.toColor}/>
+                </linearGradient>
+              ))}</defs>
+              {lines.map(l => (
+                <g key={l.key}>
+                  <path d={l.path} fill="none" stroke={l.isShared ? l.solidColor : `url(#${l.gradId})`} strokeWidth="1.2" opacity="0.25"/>
+                  <circle cx={l.fromX} cy={l.fromY} r="2" fill={l.fromColor} opacity="0.4"/>
+                  <circle cx={l.toX}   cy={l.toY}   r="2" fill={l.isShared ? l.solidColor : l.toColor} opacity="0.4"/>
+                </g>
+              ))}
+            </svg>
+          )}
+
+          {connectMode && (
+            <div style={{position:"sticky", top:58, zIndex:10, background:"#2d1f5e", color:"#e0d8f8", padding:"8px 14px", borderRadius:4, marginBottom:12, display:"flex", alignItems:"center", justifyContent:"space-between", fontSize:12, border:"1px solid #5a4a8a"}}>
+              <span>Click an event to link → "<em>{events.find(e => e.id === connectMode)?.title}</em>"</span>
+              <button className="btn" style={{color:"#e0d8f8", fontSize:11}} onClick={() => setConnectMode(null)}>Cancel</button>
+            </div>
+          )}
+
+          {sorted.length === 0 && <div style={{textAlign:"center", padding:50, color:"#3a2f6a", fontSize:14}}>No events match current filters.</div>}
+
+          {sorted.map((ev, i) => {
+            const gap  = getGap(i);
+            const isExp = expandedId === ev.id;
+            const dg   = i > 0 ? daysBetween(sorted[i-1].date, sorted[i].date) : null;
+            const pc   = ev.tags?.[0] && tagMap[ev.tags[0]] ? tagMap[ev.tags[0]].color : "#7b6ac8";
+            const sd   = i > 0 && sorted[i-1].date === ev.date;
+            const isCollapsedEstoppelFirst = collapseEstoppel && ev.id === firstEstoppel?.id;
+
+            return (
+              <div key={ev.id} style={{marginTop: gap}} className="ni">
+                {dg !== null && dg > 0 && (
+                  <div style={{textAlign:"center", fontSize:9, color:"#2d2550", letterSpacing:"0.08em", marginBottom:3, fontWeight:500}}>
+                    {dg === 1 ? "next day" : dg < 7 ? `${dg}d` : dg < 30 ? `${Math.round(dg/7)}w` : dg < 365 ? `${Math.round(dg/30)}mo` : `${(dg/365).toFixed(1)}y`}
+                  </div>
+                )}
+                <div ref={el => (nodeRefs.current[ev.id] = el)}
+                  onClick={() => { if (connectMode && connectMode !== ev.id) toggleConnection(connectMode, ev.id); else setExpandedId(isExp ? null : ev.id); }}
+                  className={`ev-row ${connectMode && connectMode !== ev.id ? "cp" : ""}`}
+                  style={{display:"flex", gap:12, padding:"8px 12px", borderRadius:4, border:`1px solid ${isExp ? pc+"44" : "#1e1a38"}`, background: isExp ? pc+"08" : "#0d0b22", cursor: connectMode ? "crosshair" : "pointer", position:"relative", zIndex:1, borderLeft: sd ? `3px solid #2d2550` : undefined}}>
+
+                  <div style={{minWidth:78, display:"flex", flexDirection:"column", alignItems:"flex-end", paddingTop:1, flexShrink:0}}>
+                    <TagDots tags={ev.tags||[]} tagMap={tagMap}/>
+                    <div style={{fontSize:10, fontWeight:600, color: sd ? "#3a2f6a" : "#7b6ac8", textAlign:"right", lineHeight:1.3, marginTop:4, letterSpacing:"0.03em"}}>
+                      {sd ? "" : fmtDateShort(ev.date)}
+                    </div>
+                    {!sd && <div style={{fontSize:9, color:"#3a2f6a", fontWeight:400, letterSpacing:"0.05em"}}>{parseDate(ev.date).getFullYear()}</div>}
+                  </div>
+
+                  <div style={{flex:1, minWidth:0}}>
+                    <div style={{display:"flex", alignItems:"flex-start", gap:4}}>
+                      <ChevronIcon open={isExp}/>
+                      <div style={{flex:1}}>
+                        <h3 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:14, fontWeight:600, lineHeight:1.35, color:"#e0d8f8"}}>{ev.title}</h3>
+                        {isCollapsedEstoppelFirst && <p style={{fontSize:11, color:"#fbbf24", fontStyle:"italic", marginTop:2}}>⟳ {estoppelCount} semesters of registration without defense — click "Show registrations" to expand</p>}
+                        <div style={{marginTop:3}}><TagPills tags={ev.tags||[]} tagMap={tagMap}/></div>
+                      </div>
+                    </div>
+                    {isExp && (
+                      <div style={{marginTop:8, paddingLeft:15}}>
+                        <p style={{fontSize:12, lineHeight:1.65, color:"#a89cc8", fontFamily:"'DM Mono',monospace", fontWeight:300}}>{ev.description}</p>
+                        {ev.connections?.length > 0 && (
+                          <div style={{marginTop:8}}>
+                            <span style={{fontSize:9, color:"#4a3f72", textTransform:"uppercase", letterSpacing:"0.08em", fontWeight:600}}>Linked to:</span>
+                            <div style={{display:"flex", gap:3, flexWrap:"wrap", marginTop:3}}>
+                              {ev.connections.map(cid => { const lk = events.find(e => e.id === cid); if (!lk) return null; return <span key={cid} style={{fontSize:10, background:"#1a1535", padding:"1px 6px", borderRadius:2, color:"#7b6ac8", border:"1px solid #2d2550"}}>{lk.title}</span>; })}
+                            </div>
+                          </div>
+                        )}
+                        <div style={{marginTop:9, display:"flex", gap:4}} onClick={e => e.stopPropagation()}>
+                          <button className="btn" style={{fontSize:11, padding:"2px 8px"}} onClick={() => openEdit(ev)}><EditIcon/> Edit</button>
+                          <button className="btn" style={{fontSize:11, padding:"2px 8px"}} onClick={() => setConnectMode(connectMode === ev.id ? null : ev.id)}><LinkIcon/> {connectMode === ev.id ? "Cancel" : "Link"}</button>
+                          <button className="btn btn-danger" style={{fontSize:11, padding:"2px 8px"}} onClick={() => deleteEvent(ev.id)}><TrashIcon/> Remove</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* EDITOR PANEL */}
+        {showEditor && (
+          <div style={{width:300, borderLeft:"1px solid #1e1a38", background:"#0d0b22", padding:"18px 14px", overflowY:"auto", flexShrink:0}}>
+            <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14}}>
+              <h2 style={{fontFamily:"'Cormorant Garamond',serif", fontSize:17, fontWeight:600, color:"#e0d8f8"}}>{editing === "new" ? "New Event" : "Edit Event"}</h2>
+              <button className="btn" onClick={() => { setShowEditor(false); setEditing(null); }} style={{padding:"2px 6px"}}><XIcon/></button>
+            </div>
+            <div style={{display:"flex", flexDirection:"column", gap:10}}>
+              <div><div className="fl">Date</div><input type="date" className="fi" value={form.date} onChange={e => setForm(p => ({...p, date: e.target.value}))}/></div>
+              <div><div className="fl">Title</div><input className="fi" value={form.title} onChange={e => setForm(p => ({...p, title: e.target.value}))} placeholder="Short title"/></div>
+              <div><div className="fl">Tags</div><TagPicker selected={form.tags||[]} allTags={allTags} onChange={tags => setForm(p => ({...p, tags}))}/></div>
+              <div><div className="fl">Description</div><textarea className="fi" value={form.description} onChange={e => setForm(p => ({...p, description: e.target.value}))} placeholder="Full narrative…" rows={4}/></div>
+              <div style={{display:"flex", gap:6, marginTop:2}}>
+                <button className="btn btn-primary" onClick={saveForm} style={{flex:1}}>{editing === "new" ? "Add" : "Save"}</button>
+                <button className="btn" onClick={() => { setShowEditor(false); setEditing(null); }}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<MasterTimeline/>);
+</script>
 </body>
 </html>
