@@ -4,8 +4,7 @@
   "features": {
     "ghcr.io/devcontainers/features/python:1": {
       "version": "3.11"
-    },
-    "ghcr.io/devcontainers/features/sqlite3:1": {}
+    }
   },
   "customizations": {
     "vscode": {
@@ -18,13 +17,13 @@
       ]
     }
   },
-  "forwardPorts": [3000],
+  "forwardPorts": [5500],
   "portsAttributes": {
-    "3000": {
+    "5500": {
       "label": "Illucidate Web Preview",
       "onAutoForward": "openPreview"
     }
   },
-  "postCreateCommand": "npm install && pip3 install -r requirements.txt",
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y sqlite3 && python -m pip install --upgrade pip",
   "remoteUser": "node"
 }
