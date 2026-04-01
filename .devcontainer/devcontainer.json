@@ -1,0 +1,30 @@
+{
+  "name": "Illucidate Development Environment",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    },
+    "ghcr.io/devcontainers/features/sqlite3:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-toolsai.jupyter"
+      ]
+    }
+  },
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Illucidate Web Preview",
+      "onAutoForward": "openPreview"
+    }
+  },
+  "postCreateCommand": "npm install && pip3 install -r requirements.txt",
+  "remoteUser": "node"
+}
